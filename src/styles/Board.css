@@ -1,0 +1,20 @@
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 0fr);
+}
+
+.square {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dark-square {
+    background-color: #769656;
+}
+
+.light-square {
+    background-color: #eeeed2;
+}
