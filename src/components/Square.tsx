@@ -14,50 +14,47 @@ import RookWhite from "./figures/RookWhite";
 import RookBlack from "./figures/RookBlack";
 
 type SquareProps = {
-    className: string;
     figure: string;
-    xIndex: number;
-    yIndex: number;
 }
 
 const Square = (props: SquareProps) => {
     if (props.figure === "pawn_white") {
-        return (<div className={props.className}><PawnWhite/></div>)
+        return <PawnWhite/>
     }
     if (props.figure === "pawn_black") {
-        return (<div className={props.className}><PawnBlack/></div>)
+        return <PawnBlack/>
     }
     if(props.figure === "rook_white") {
-        return(<div className={props.className}><RookWhite/></div>)
+        return <RookWhite/>
     }
     if(props.figure === "rook_black") {
-        return(<div className={props.className}><RookBlack/></div>)
+        return<RookBlack/>
     }
     if (props.figure === "knight_white") {
-        return (<div className={props.className}><KnightWhite/></div>)
+        return <KnightWhite/>
     }
     if (props.figure === "knight_black") {
-        return (<div className={props.className}><KnightBlack/></div>)
+        return <KnightBlack/>
     }
     if (props.figure === "bishop_white") {
-        return (<div className={props.className}><BishopWhite/></div>)
+        return <BishopWhite/>
     }
     if (props.figure === "bishop_black") {
-        return (<div className={props.className}><BishopBlack/></div>)
+        return <BishopBlack/>
     }
     if (props.figure === "queen_white") {
-        return (<div className={props.className}><QueenWhite/></div>)
+        return <QueenWhite/>
     }
     if (props.figure === "queen_black") {
-        return (<div className={props.className}><QueenBlack/></div>)
+        return <QueenBlack/>
     }
     if (props.figure === "king_white") {
-        return (<div className={props.className}><KingWhite/></div>)
+        return <KingWhite/>
     } 
     if (props.figure === "king_black") {
-        return (<div className={props.className}><KingBlack/></div>)
+        return <KingBlack/>
     }
-    return (<div className={props.className}>{props.figure}</div>);
+    return (<div>{props.figure}</div>);
     
 }
 

@@ -1,6 +1,8 @@
 .board {
     display: grid;
     grid-template-columns: repeat(8, 0fr);
+    border: 3px solid black;
+    width: min-content;
 }
 
 .square {
@@ -17,4 +19,52 @@
 
 .light-square {
     background-color: #eeeed2;
+}
+
+.chosen-square {
+    background-color: #baca44;
+}
+
+.light-gray-dot {
+    width: 30px;
+    height: 30px;
+    background-color: #d1d5b7;
+    border-radius: 20px;
+}
+
+.dark-gray-dot {
+    width: 30px;
+    height: 30px;
+    background-color: #6b894b;
+    border-radius: 20px;
+}
+
+.red-square {
+    border: 2px solid red;
+}
+
+.light-gray-circle {
+    background-color: #d1d5b7;
+}
+
+.dark-gray-circle {
+    background-color: #6b894b;
+}
+
+.outer-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+.inner-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
 }
