@@ -49,14 +49,14 @@ const Board = () => {
                 let color = currentBoard[chosenSquareX][chosenSquareY].slice(-5);
                 
                 if(currentBoard[chosenSquareX][chosenSquareY].startsWith("pawn") && (cordinateX === 0 || cordinateX === 7)) {
-                    tempBoard[cordinateX][cordinateY] = "queen_" + color; //TODO enable more choices
+                    tempBoard[cordinateX][cordinateY] = "queen_" + color;
                 } else {
                     tempBoard[cordinateX][cordinateY] = tempBoard[chosenSquareX][chosenSquareY];
                 }
-                if(figure === "white_king") {
+                if(currentBoard[chosenSquareX][chosenSquareY] === "king_white") {
                     setWhiteKingPosition([cordinateX, cordinateY]);
                 }
-                else if(figure === "black_king") {
+                else if(currentBoard[chosenSquareX][chosenSquareY] === "king_black") {
                     setBlackKingPosition([cordinateX, cordinateY]);
                 }
                 tempBoard[chosenSquareX][chosenSquareY] = "";

@@ -1,0 +1,82 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.pre-game-sidebar {
+    justify-content: center;
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    padding: 20px;
+    width: 350px;
+    height: 100px;
+    border-radius: 10px;
+    border: 3px solid #9dcb5d;;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.human-button {
+    background-color: #769656;
+    color: #eeeed2;
+}
+
+.human-button:hover {
+    background-color: #9dcb5d;
+}
+
+.computer-button {
+    background-color: #eeeed2;
+    color: #769656;
+}
+
+.computer-button:hover {
+    background-color: #9dcb5d;
+    color: #eeeed2;
+}
+
+.title {
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.id-input {
+    width: 100px;
+    height: 25px;
+    font-size: 15px;
+    margin-top: 10px;
+    background-color: #eeeed2;
+    text-align: center;
+}
+
+.id-input:focus {
+    outline: none;
+}
+
+.leave-game-button {
+    display: flex;
+    width: 200px;
+    height: 50px;
+    background-color: red;
+    cursor: pointer;
+    color: white;
+    border-radius: 10px;
+    border: 3px solid black;
+    align-items: center;
+    justify-content: center;
+}
+
+.leave-game-button:hover {
+    background-color: rgb(247, 108, 108);
+}

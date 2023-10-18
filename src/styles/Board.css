@@ -1,8 +1,15 @@
+.app {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .board {
     display: grid;
     grid-template-columns: repeat(8, 0fr);
     border: 3px solid black;
     width: min-content;
+    margin: 40px;
 }
 
 .square {

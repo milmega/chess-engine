@@ -105,8 +105,10 @@ export const getAttackMoves = (figure: string, fromX: number, fromY: number, pos
     return attacks;
 }
 
+//filters list of valid moves to prevent checking the king and enables moves that defend from checking
 export const getValidMoves = (figure: string, moves: number[][], fromX: number, fromY: number, kingPosition: number[], board: string[][]) => {
     //TODO figure out hot filter moves for all pieces so they dont cause king to be checked
+    
     const newMoves = moves.filter(move => {
         const newX = fromX + move[0];
         const newY = fromY + move[1];
@@ -117,8 +119,10 @@ export const getValidMoves = (figure: string, moves: number[][], fromX: number, 
 
         if(figure.startsWith("king")) {
             return !isKingUnderCheck(newX, newY, tempBoard);
+        } else {
+            return !isKingUnderCheck(kingPosition[0], kingPosition[1], tempBoard);
         }
-        return !isKingUnderCheck(kingPosition[0], kingPosition[1], tempBoard);
+         
     });
 
     return newMoves;
