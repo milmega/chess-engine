@@ -12,8 +12,8 @@ const Board = () => {
     const [colorToMove, setColorToMove] = useState("white");
     const [whiteKingPosition, setWhiteKingPosition] = useState([7, 4]);
     const [blackKingPosition, setBlackKingPosition] = useState([0, 4]);
-    //const [whiteCastling, setWhiteCastling] = useState({rook70: true, rook77: true, king: true}); TODO: deal with castling after checking
-    //const [blackCastling, setBlackCastling] = useState({rook00: true, rook07: true, king: true});
+    const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
+    const [blackCastling, setBlackCastling] = useState([false, false, false]);
     const [currentBoard, setCurrentBoard] = useState([
         ["rook_black", "knight_black", "bishop_black", "queen_black", "king_black", "bishop_black", "knight_black", "rook_black"],
         ["pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black"],
@@ -36,7 +36,8 @@ const Board = () => {
             }
             
             const kingPosition = colorToMove === "white" ? whiteKingPosition : blackKingPosition;
-            const validMoves = getValidMoves(figure, getMoves(figure, cordinateX, cordinateY, currentBoard), cordinateX, cordinateY, kingPosition, currentBoard);
+            const castling = colorToMove === "white" ? whiteCastling : blackCastling;
+            const validMoves = getValidMoves(figure, getMoves(figure, cordinateX, cordinateY, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
             const attacks = getAttackMoves(figure, cordinateX, cordinateY, validMoves, currentBoard);
     
             setPotentialAttacks(attacks);
@@ -55,9 +56,41 @@ const Board = () => {
                 }
                 if(currentBoard[chosenSquareX][chosenSquareY] === "king_white") {
                     setWhiteKingPosition([cordinateX, cordinateY]);
+                    setWhiteCastling([true, true, true]);
+                    if(Math.abs(cordinateY - chosenSquareY) > 1) { //if king is doing castling, move rook accordingly
+                        if(cordinateY === 2) {
+                            tempBoard[7][0] = "";
+                            tempBoard[7][3] = "rook_white";
+                        } else {
+                            tempBoard[7][7] = "";
+                            tempBoard[7][5] = "rook_white";
+                        }
+                    }
                 }
                 else if(currentBoard[chosenSquareX][chosenSquareY] === "king_black") {
                     setBlackKingPosition([cordinateX, cordinateY]);
+                    setBlackCastling([true, true, true]);
+                    if(Math.abs(cordinateY - chosenSquareY) > 1) { //if king is doing castling, move rook accordingly
+                        if(cordinateY === 2) {
+                            tempBoard[0][0] = "";
+                            tempBoard[0][3] = "rook_black";
+                        } else {
+                            tempBoard[0][7] = "";
+                            tempBoard[0][5] = "rook_black";
+                        }
+                    }
+                }
+                //if you move a rook then disable castling
+                if(currentBoard[chosenSquareX][chosenSquareY].startsWith("rook")) {
+                    if(currentBoard[chosenSquareX][chosenSquareY].endsWith("white")) {
+                        let tempCastling = whiteCastling;
+                        tempCastling[1] = true;
+                        setWhiteCastling(tempCastling);
+                    } else {
+                        let tempCastling = blackCastling;
+                        tempCastling[2] = true;
+                        setBlackCastling(tempCastling);
+                    }
                 }
                 tempBoard[chosenSquareX][chosenSquareY] = "";
                 setCurrentBoard(tempBoard);             

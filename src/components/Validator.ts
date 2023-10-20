@@ -106,9 +106,7 @@ export const getAttackMoves = (figure: string, fromX: number, fromY: number, pos
 }
 
 //filters list of valid moves to prevent checking the king and enables moves that defend from checking
-export const getValidMoves = (figure: string, moves: number[][], fromX: number, fromY: number, kingPosition: number[], board: string[][]) => {
-    //TODO figure out hot filter moves for all pieces so they dont cause king to be checked
-    
+export const getValidMoves = (figure: string, moves: number[][], fromX: number, fromY: number, kingPosition: number[], castling: boolean[], board: string[][]) => {    
     const newMoves = moves.filter(move => {
         const newX = fromX + move[0];
         const newY = fromY + move[1];
@@ -124,10 +122,13 @@ export const getValidMoves = (figure: string, moves: number[][], fromX: number, 
         }
          
     });
-
+    if(figure.startsWith("king") && !castling[0] && (!castling[1] || !castling[2])) {
+        newMoves.push(...getCastlingMoves(figure.slice(-5), castling, board));
+    }
     return newMoves;
 }
 
+//checks if king is under check
 const isKingUnderCheck = (kingX: number, kingY: number, board: string[][]) => {
     const color = board[kingX][kingY].slice(-5);
 
@@ -144,6 +145,41 @@ const isKingUnderCheck = (kingX: number, kingY: number, board: string[][]) => {
         }
     }
     return false;
+}
+
+//checks if castling is possible and returns an array with possible moves
+const getCastlingMoves = (color: string, castling: boolean[], board: string[][]) => {
+    const castlingMoves: number[][] = [];
+    const row = color === "white" ? 7 : 0;
+    let leftCastlingEnabled: boolean = true;
+    let rightCastlingEnabled: boolean = true;
+
+    for(let i = 0; i < 8; i++) {
+        if(!leftCastlingEnabled && !rightCastlingEnabled) {
+            break;
+        }
+        for(let j = 0; j < 8; j++) {
+            if(board[i][j] === "" || board[i][j].endsWith(color)) {
+                continue;
+            }
+
+            const moves = getMoves(board[i][j], i, j, board);
+            if(moves.some(move => move[0] + i === row && move[1] + j < 5)) {
+                leftCastlingEnabled = false;
+            }
+            if(moves.some(move => move[0] + i === row && move[1] + j > 3)) {
+                rightCastlingEnabled = false;
+            }
+        }
+    }
+    if(!castling[1] && leftCastlingEnabled && board[row][1] === "" && board[row][2] === "" && board[row][3] === "") { //if left rook hasn't moved
+        castlingMoves.push([0, -2]);
+    }
+    if(!castling[2] && rightCastlingEnabled && board[row][5] === "" && board[row][5] === "") { //if right rook hasn't moved
+        castlingMoves.push([0, 2]);
+    }
+
+    return castlingMoves;
 }
 
 const copy2DArray = (array: any[][]) => {
