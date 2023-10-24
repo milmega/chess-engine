@@ -1,10 +1,15 @@
 import Square from "./Square";
 import "../styles/Board.css"
 import { useState } from "react";
-import { getAttackMoves, getMoves, getValidMoves } from "./Validator";
+import { getAttackMoves, getMoves, getValidMoves, isKingCheckmated } from "./Validator";
+import React from "react";
 
-const Board = () => {
+interface Props {
+    onGameEnd: (color: string) => void,
+    gameMode: string
+}
 
+const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
     const [chosenSquareX, setChosenSquareX] = useState(-1);
     const [chosenSquareY, setChosenSquareY] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<number[][]>([]);
@@ -25,7 +30,32 @@ const Board = () => {
         ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"]
     ]);
 
+    const reset = () => {
+        setChosenSquareX(-1);
+        setChosenSquareY(-1);
+        setPotentialMoves([]);
+        setPotentialAttacks([]);
+        setColorToMove("white");
+        setWhiteKingPosition([7, 4]);
+        setBlackKingPosition([0, 4]);
+        setWhiteCastling([false, false, false]);
+        setBlackCastling([false, false, false]);
+        setCurrentBoard([
+            ["rook_black", "knight_black", "bishop_black", "queen_black", "king_black", "bishop_black", "knight_black", "rook_black"],
+            ["pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black", "pawn_black"],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],
+            ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"]
+        ]);
+    }
+
     const makeMove = (figure: string, cordinateX: number, cordinateY: number) => {
+        if(gameMode === "menu") {
+            return;
+        }
         if((chosenSquareX === -1 && chosenSquareY === -1)
             || currentBoard[cordinateX][cordinateY].slice(-5) === currentBoard[chosenSquareX][chosenSquareY].slice(-5)) {
             if(currentBoard[cordinateX][cordinateY] === ""){
@@ -93,11 +123,16 @@ const Board = () => {
                     }
                 }
                 tempBoard[chosenSquareX][chosenSquareY] = "";
-                setCurrentBoard(tempBoard);             
+                setCurrentBoard(tempBoard);
+
+                const kingPosition = colorToMove === "white" ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
+                if(isKingCheckmated(kingPosition, colorToMove, currentBoard)){
+                    onGameEnd(colorToMove);
+                } 
                 
                 if(colorToMove === "white") {
-                    setColorToMove("black");    
-                } else {
+                    setColorToMove("black"); 
+                } else {   
                     setColorToMove("white");
                 }             
             }
@@ -108,8 +143,12 @@ const Board = () => {
         }
     }
 
+    React.useImperativeHandle(ref, () => ({
+        reset,
+    }));
+
     return (
-        <div className="board">
+        <div className={`board ${gameMode !== "menu" ? "board-active" : ""}`}>
             {
             currentBoard.map((row, rowIndex) => row.map((element, index) => {
                 if((rowIndex % 2 === 0 && index % 2 === 1) || (rowIndex % 2 === 1 && index % 2 === 0)) {
@@ -150,6 +189,6 @@ const Board = () => {
             }))}
         </div>
         )
-}
+});
 
 export default Board;

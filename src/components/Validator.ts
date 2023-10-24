@@ -128,6 +128,22 @@ export const getValidMoves = (figure: string, moves: number[][], fromX: number, 
     return newMoves;
 }
 
+//checks if king in checkmated
+export const isKingCheckmated = (kingPosition: number[], color: string, board: string[][]) => {
+    for(let i = 0; i < 8; i++) {
+        for(let j = 0; j < 8; j++) {
+            if(board[i][j] === "" || board[i][j].endsWith(color)) {
+                continue;
+            }
+            const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, board), i, j, kingPosition, [false, false, false], board);
+            if(moves.length > 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 //checks if king is under check
 const isKingUnderCheck = (kingX: number, kingY: number, board: string[][]) => {
     const color = board[kingX][kingY].slice(-5);

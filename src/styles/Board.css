@@ -10,6 +10,31 @@
     border: 3px solid black;
     width: min-content;
     margin: 40px;
+    opacity: 40%;
+}
+
+.board-active {
+    opacity: 100%;
+}
+
+.banner {
+    width: 800px;
+    height: 250px;
+    margin: 43px;
+    background: rgb(0, 0, 0, 0.7);
+    position: absolute;
+    top: 277px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.banner-text {
+    color: white;
+    opacity: 100%;
+    font-weight: 800;
+    font-size: 100px;
 }
 
 .square {
