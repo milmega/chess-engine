@@ -13,8 +13,8 @@ function App() {
   const [winner, setWinner] = useState("");
   const [gameMode, setGameMode] = useState("menu");
 
-  const declareWinner = (colour: string) => {
-    setWinner(colour);
+  const declareWinner = (colour: number) => {
+    setWinner(colour > 0 ? "WHITE" : "BLACK");
   }
 
   const resetGame = () => {
@@ -49,7 +49,7 @@ function App() {
     <div className="app">
       <div>
         <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} playerColour/>
-        {winner && <div className="banner"><span className="banner-text">{winner.toUpperCase()} WINS!</span></div>}
+        {winner && <div className="banner"><span className="banner-text">{winner} WINS!</span></div>}
       </div>
       <SideBar onGameReset={resetGame} onPlayOnline={playOnline} onPlayComputer={playComputer} onLearnMore={learnMore}/>
       {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
