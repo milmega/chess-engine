@@ -126,7 +126,7 @@ export const getValidMoves = (piece: number, moves: number[][], fromX: number, f
 export const isKingCheckmated = (kingPosition: number[], colour: number, board: number[][]) => {
     for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 8; j++) {
-            if(board[i][j] === 0 || board[i][j]*colour > 0) {
+            if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
                 continue;
             }
             const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, board), i, j, kingPosition, [false, false, false], board);
@@ -141,20 +141,15 @@ export const isKingCheckmated = (kingPosition: number[], colour: number, board: 
 //checks if king is under check
 const isKingUnderCheck = (kingX: number, kingY: number, board: number[][]) => {
     const colour = board[kingX][kingY] > 0 ? 1 : -1;
-    console.log("king: " + kingX + ", " + kingY);
     for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 8; j++) {
             if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
                 continue;
             }
             const moves = getMoves(board[i][j], i, j, board);
-
-            //console.log("piece: " + board[i][j]);
-            //console.log(moves);
-            
             const attackMoves = getAttackMoves(board[i][j], i, j, moves, board);
+
             if(attackMoves.some(move => kingX === move[0] && kingY === move[1])) {
-                console.log("YES");
                 return true;
             }
         }

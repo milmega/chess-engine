@@ -136,7 +136,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 tempBoard[chosenSquareX][chosenSquareY] = 0;
                 setCurrentBoard(tempBoard);
 
-                const kingPosition = colourToMove ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
+                const kingPosition = colourToMove > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
                 if(isKingCheckmated(kingPosition, colourToMove, currentBoard)){
                     onGameEnd(colourToMove);
                 } 
