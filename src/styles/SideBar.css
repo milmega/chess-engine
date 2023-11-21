@@ -5,7 +5,7 @@
 }
 
 .pre-game-sidebar {
-    justify-content: center;
+    justify-content: space-between;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -21,7 +21,7 @@
     width: 350px;
     height: 100px;
     border-radius: 10px;
-    border: 3px solid #9dcb5d;;
+    border: 3px solid #9dcb5d;
     margin: 10px;
     cursor: pointer;
 }
@@ -29,6 +29,7 @@
 .human-button {
     background-color: #769656;
     color: #eeeed2;
+    margin-top: 47px;
 }
 
 .human-button:hover {
@@ -68,6 +69,13 @@
     outline: none;
 }
 
+.user-id-container {
+    color: #eeeed2;
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+}
+
 .leave-game-button {
     display: flex;
     width: 200px;
@@ -83,4 +91,26 @@
 
 .leave-game-button:hover {
     background-color: rgb(247, 108, 108);
+}
+
+.learn-more-button {
+    height: 20px;
+    width: 200px;
+    align-self: center;
+    background-color: #769656;
+    color: #eeeed2;
+}
+
+.learn-more-button:hover {
+    background-color: #9dcb5d;
+}
+
+.learn-more-title {
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.learn-more-subtitle {
+    font-size: 15px;
+    font-weight: 500;
 }

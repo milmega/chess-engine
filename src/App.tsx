@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import Board from './components/Board';
 import SideBar from './components/SideBar';
 import "./styles/Board.css";
+import EduSection from './components/EduSection';
 
 interface BoardRef {
   reset: () => void;  
@@ -12,8 +13,8 @@ function App() {
   const [winner, setWinner] = useState("");
   const [gameMode, setGameMode] = useState("menu");
 
-  const declareWinner = (color: string) => {
-    setWinner(color);
+  const declareWinner = (colour: string) => {
+    setWinner(colour);
   }
 
   const resetGame = () => {
@@ -34,14 +35,24 @@ function App() {
     console.log("playing computer");
     setGameMode("computer");
   }
+
+  const learnMore = () => {
+    console.log("learning more");
+    setGameMode("menu-edu");
+  }
+
+  const onEduSectionExit = () => {
+    setGameMode("menu");
+  }
   
   return (
     <div className="app">
       <div>
-        <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode}/>
+        <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} playerColour/>
         {winner && <div className="banner"><span className="banner-text">{winner.toUpperCase()} WINS!</span></div>}
       </div>
-      <SideBar onGameReset={resetGame} onPlayOnline={playOnline} onPlayComputer={playComputer}/>
+      <SideBar onGameReset={resetGame} onPlayOnline={playOnline} onPlayComputer={playComputer} onLearnMore={learnMore}/>
+      {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
     </div>
   );
 }

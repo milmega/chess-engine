@@ -3,18 +3,20 @@ import "../styles/Board.css"
 import { useState } from "react";
 import { getAttackMoves, getMoves, getValidMoves, isKingCheckmated } from "./Validator";
 import React from "react";
+import MoveGeneratorService from "../services/MoveGeneratorService";
 
 interface Props {
-    onGameEnd: (color: string) => void,
-    gameMode: string
+    onGameEnd: (colour: string) => void,
+    gameMode: string,
+    playerColour: boolean
 }
 
-const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
+const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref) => {
     const [chosenSquareX, setChosenSquareX] = useState(-1);
     const [chosenSquareY, setChosenSquareY] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<number[][]>([]);
     const [potentialAttacks, setPotentialAttacks] = useState<number[][]>([]);
-    const [colorToMove, setColorToMove] = useState("white");
+    const [colourToMove, setColourToMove] = useState("white");
     const [whiteKingPosition, setWhiteKingPosition] = useState([7, 4]);
     const [blackKingPosition, setBlackKingPosition] = useState([0, 4]);
     const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
@@ -29,13 +31,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
         ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],
         ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"]
     ]);
+  const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
 
     const reset = () => {
         setChosenSquareX(-1);
         setChosenSquareY(-1);
         setPotentialMoves([]);
         setPotentialAttacks([]);
-        setColorToMove("white");
+        setColourToMove("white");
         setWhiteKingPosition([7, 4]);
         setBlackKingPosition([0, 4]);
         setWhiteCastling([false, false, false]);
@@ -53,7 +56,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
     }
 
     const makeMove = (figure: string, cordinateX: number, cordinateY: number) => {
-        if(gameMode === "menu") {
+        if(gameMode.startsWith("menu")) {
             return;
         }
         if((chosenSquareX === -1 && chosenSquareY === -1)
@@ -61,12 +64,12 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
             if(currentBoard[cordinateX][cordinateY] === ""){
                 return;
             }
-            if(figure !== "" && !figure.includes(colorToMove)) {
+            if(figure !== "" && !figure.includes(colourToMove)) {
                 return;
             }
             
-            const kingPosition = colorToMove === "white" ? whiteKingPosition : blackKingPosition;
-            const castling = colorToMove === "white" ? whiteCastling : blackCastling;
+            const kingPosition = colourToMove === "white" ? whiteKingPosition : blackKingPosition;
+            const castling = colourToMove === "white" ? whiteCastling : blackCastling;
             const validMoves = getValidMoves(figure, getMoves(figure, cordinateX, cordinateY, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
             const attacks = getAttackMoves(figure, cordinateX, cordinateY, validMoves, currentBoard);
     
@@ -77,10 +80,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
         } else {
             if(potentialMoves.some(m => chosenSquareX + m[0] === cordinateX && chosenSquareY + m[1] === cordinateY)) {
                 let tempBoard = currentBoard;
-                let color = currentBoard[chosenSquareX][chosenSquareY].slice(-5);
+                let colour = currentBoard[chosenSquareX][chosenSquareY].slice(-5);
                 
                 if(currentBoard[chosenSquareX][chosenSquareY].startsWith("pawn") && (cordinateX === 0 || cordinateX === 7)) {
-                    tempBoard[cordinateX][cordinateY] = "queen_" + color;
+                    tempBoard[cordinateX][cordinateY] = "queen_" + colour;
                 } else {
                     tempBoard[cordinateX][cordinateY] = tempBoard[chosenSquareX][chosenSquareY];
                 }
@@ -125,16 +128,18 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
                 tempBoard[chosenSquareX][chosenSquareY] = "";
                 setCurrentBoard(tempBoard);
 
-                const kingPosition = colorToMove === "white" ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
-                if(isKingCheckmated(kingPosition, colorToMove, currentBoard)){
-                    onGameEnd(colorToMove);
+                const kingPosition = colourToMove === "white" ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
+                if(isKingCheckmated(kingPosition, colourToMove, currentBoard)){
+                    onGameEnd(colourToMove);
                 } 
-                
-                if(colorToMove === "white") {
-                    setColorToMove("black"); 
+                if(colourToMove === "white") {
+                    setColourToMove("black");
+                    //computeComputerMove(false);
                 } else {   
-                    setColorToMove("white");
-                }             
+                    setColourToMove("white");
+                    //computeComputerMove(true);
+                }
+                          
             }
             setPotentialAttacks([]);
             setPotentialMoves([]);
@@ -143,12 +148,73 @@ const Board = React.forwardRef(({onGameEnd, gameMode}: Props, ref) => {
         }
     }
 
+    const computeComputerMove = (colour: boolean) => { //TODO: make a feature so user can choose white or black
+        moveGeneratorService
+            .getMoveData(convertBoard2String(), colour)
+            .then(moveData => {
+                console.log("data: " + moveData);
+                const cors: string = moveData.toString();
+                const fromX = parseInt(cors.charAt(0));
+                const fromY = parseInt(cors.charAt(1));
+                const toX = parseInt(cors.charAt(2));
+                const toY = parseInt(cors.charAt(3));
+                let tempBoard = currentBoard;
+                tempBoard[+toX][+toY] = tempBoard[+fromX][+fromY];
+                tempBoard[+fromX][+fromY] = "";
+                setCurrentBoard(tempBoard);
+                setColourToMove("white"); //TODO: adjust it so it updated colour to move
+                 
+            })
+            .catch(error => {
+                console.error('There was an error:', error.message);
+            });
+    }
+
+    const convertBoard2String = () => { //TODO: rewrite current board so it uses ints
+        let convertedBoard = "";
+        console.log(currentBoard);
+        for(let i = 0; i < 8; i++) {
+            for(let j = 0; j < 8; j++) {
+                if(i === 4 && j === 4) {
+                    console.log(currentBoard[i][j]);
+                }
+                if(currentBoard[i][j] === "") {
+                    convertedBoard += "0";
+                    continue;
+                }
+                if(currentBoard[i][j].endsWith("black")) {
+                    convertedBoard += "-"
+                }
+                if(currentBoard[i][j].startsWith("pawn")) {
+                    convertedBoard += "1"
+                }
+                else if(currentBoard[i][j].startsWith("knight")) {
+                    convertedBoard += "2"
+                }
+                else if(currentBoard[i][j].startsWith("bishop")) {
+                    convertedBoard += "3"
+                }
+                else if(currentBoard[i][j].startsWith("rook")) {
+                    convertedBoard += "4"
+                }
+                else if(currentBoard[i][j].startsWith("queen")) {
+                    convertedBoard += "5"
+                }
+                else if(currentBoard[i][j].startsWith("king")) {
+                    convertedBoard += "6"
+                }
+            }
+        }
+        console.log(convertedBoard);
+        return convertedBoard;
+    }
+
     React.useImperativeHandle(ref, () => ({
         reset,
     }));
 
     return (
-        <div className={`board ${gameMode !== "menu" ? "board-active" : ""}`}>
+        <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : ""}`}>
             {
             currentBoard.map((row, rowIndex) => row.map((element, index) => {
                 if((rowIndex % 2 === 0 && index % 2 === 1) || (rowIndex % 2 === 1 && index % 2 === 0)) {

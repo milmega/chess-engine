@@ -4,10 +4,11 @@ import "../styles/SideBar.css"
 interface Props {
     onGameReset: () => void,
     onPlayOnline: () => void,
-    onPlayComputer: () => void
+    onPlayComputer: () => void,
+    onLearnMore: () => void
 }
 
-const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer}) => {
+const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, onLearnMore}) => {
 
     const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
 
@@ -26,20 +27,32 @@ const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer}) =
         onGameReset();
     }
 
+    const onLearnMoreClicked = () => {
+        setGameMode("menu-edu");
+        onLearnMore();
+    }
+
     return (
         <div className="sidebar">
-            { gameMode === "menu" && <div className="pre-game-sidebar">
-                <div className="button human-button" onClick={onPlayOnlineClicked}>
-                    <span className="title">Play Online</span>
-                    <span className="subtitle">Play against another user</span>
-                    <input className="id-input" placeholder="Game ID"></input>
+            { gameMode.startsWith("menu") && <div className="pre-game-sidebar">
+                <div className="user-id-container">ID: #000001</div>
+                <div>
+                    <div className="button human-button" onClick={onPlayOnlineClicked}>
+                        <span className="title">Play Online</span>
+                        <span className="subtitle">Play against another user</span>
+                        <input className="id-input" placeholder="USER ID"></input>
+                    </div>
+                    <div className="button computer-button" onClick={onPlayComputerClicked}>
+                        <span className="title">Play Computer</span>
+                        <span className="subtitle">Play against a bot</span>
+                    </div>
                 </div>
-                <div className="button computer-button" onClick={onPlayComputerClicked}>
-                    <span className="title">Play Computer</span>
-                    <span className="subtitle">Play against a bot</span>
+                <div className="button learn-more-button" onClick={onLearnMoreClicked}>
+                    <span className="learn-more-title">Learn More</span>
+                    <span className="learn-more-subtitle">Learn about AI algorithms</span>
                 </div>
             </div> }
-            { gameMode !== "menu" && <div className="game-sidebar">
+            { !gameMode.startsWith("menu") && <div className="game-sidebar">
                 <div className="leave-game-button" onClick={onLeaveGameClicked}>
                     <span>Leave the game</span>
                 </div>

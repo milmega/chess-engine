@@ -8,11 +8,9 @@ export const getMoves = (figure: string, cordinateX: number, cordinateY: number,
             if(newX < 0 || newX > 7 || newY < 0 || newY > 7) {
                 return false;
             }
-            if((board[newX][newY].endsWith("black") && figure.endsWith("black"))
-                || (board[newX][newY].endsWith("white") && figure.endsWith("white"))) {
-                return false;
-            }
-            return true;
+            return !((board[newX][newY].endsWith("black") && figure.endsWith("black"))
+                || (board[newX][newY].endsWith("white") && figure.endsWith("white")));
+
         });
     }
 
@@ -27,14 +25,12 @@ export const getMoves = (figure: string, cordinateX: number, cordinateY: number,
             let potentialSquare = board[newX][newY]; 
             if(potentialSquare === "") {
                 allMovesForFigure.push([m[0] * i, m[1] * i]);
+                continue;
             } 
             else if((potentialSquare.endsWith("white") && figure.endsWith("black")) || (potentialSquare.endsWith("black") && figure.endsWith("white"))) {
                 allMovesForFigure.push([m[0] * i, m[1] * i]);
-                break;
             }
-            else {
-                break;
-            }
+            break;
         }
     })
     return allMovesForFigure;
@@ -53,7 +49,7 @@ export const getMovesForFigure = (figure: string, cordinateX: number, cordinateY
             if(cordinateX > 0 && cordinateY > 0 && board[cordinateX - 1][cordinateY - 1].endsWith("black")) {
                 pawnMoves.push([-1, -1]);
             }
-            if(cordinateX > 0 && cordinateY < 7 && board[cordinateX + 1][cordinateY + 1].endsWith("black")) {
+            if(cordinateX > 0 && cordinateY < 7 && board[cordinateX - 1][cordinateY + 1].endsWith("black")) {
                 pawnMoves.push([-1, 1])
             }
         } else { //black pawn
@@ -82,7 +78,6 @@ export const getMovesForFigure = (figure: string, cordinateX: number, cordinateY
         return [[1, 1], [1, -1], [-1, 1], [-1, -1]];
     }
     if(figure.startsWith("king")) {
-        // deal with castling
         return [[1, 0], [1, 1], [1, -1], [0, 1], [0, -1], [-1, 1], [-1, 0], [-1, -1]];
     }
     if(figure.startsWith("queen")) {
@@ -129,10 +124,10 @@ export const getValidMoves = (figure: string, moves: number[][], fromX: number, 
 }
 
 //checks if king in checkmated
-export const isKingCheckmated = (kingPosition: number[], color: string, board: string[][]) => {
+export const isKingCheckmated = (kingPosition: number[], colour: string, board: string[][]) => {
     for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 8; j++) {
-            if(board[i][j] === "" || board[i][j].endsWith(color)) {
+            if(board[i][j] === "" || board[i][j].endsWith(colour)) {
                 continue;
             }
             const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, board), i, j, kingPosition, [false, false, false], board);
@@ -146,11 +141,11 @@ export const isKingCheckmated = (kingPosition: number[], color: string, board: s
 
 //checks if king is under check
 const isKingUnderCheck = (kingX: number, kingY: number, board: string[][]) => {
-    const color = board[kingX][kingY].slice(-5);
+    const colour = board[kingX][kingY].slice(-5);
 
     for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 8; j++) {
-            if(board[i][j] === "" || board[i][j].endsWith(color)) {
+            if(board[i][j] === "" || board[i][j].endsWith(colour)) {
                 continue;
             }
             const moves = getMoves(board[i][j], i, j, board);
@@ -164,9 +159,9 @@ const isKingUnderCheck = (kingX: number, kingY: number, board: string[][]) => {
 }
 
 //checks if castling is possible and returns an array with possible moves
-const getCastlingMoves = (color: string, castling: boolean[], board: string[][]) => {
+const getCastlingMoves = (colour: string, castling: boolean[], board: string[][]) => {
     const castlingMoves: number[][] = [];
-    const row = color === "white" ? 7 : 0;
+    const row = colour === "white" ? 7 : 0;
     let leftCastlingEnabled: boolean = true;
     let rightCastlingEnabled: boolean = true;
 
@@ -175,23 +170,19 @@ const getCastlingMoves = (color: string, castling: boolean[], board: string[][])
             break;
         }
         for(let j = 0; j < 8; j++) {
-            if(board[i][j] === "" || board[i][j].endsWith(color)) {
+            if(board[i][j] === "" || board[i][j].endsWith(colour)) {
                 continue;
             }
 
             const moves = getMoves(board[i][j], i, j, board);
-            if(moves.some(move => move[0] + i === row && move[1] + j < 5)) {
-                leftCastlingEnabled = false;
-            }
-            if(moves.some(move => move[0] + i === row && move[1] + j > 3)) {
-                rightCastlingEnabled = false;
-            }
+            leftCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j < 5);
+            rightCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j > 3);
         }
     }
     if(!castling[1] && leftCastlingEnabled && board[row][1] === "" && board[row][2] === "" && board[row][3] === "") { //if left rook hasn't moved
         castlingMoves.push([0, -2]);
     }
-    if(!castling[2] && rightCastlingEnabled && board[row][5] === "" && board[row][5] === "") { //if right rook hasn't moved
+    if(!castling[2] && rightCastlingEnabled && board[row][5] === "" && board[row][6] === "") { //if right rook hasn't moved
         castlingMoves.push([0, 2]);
     }
 
