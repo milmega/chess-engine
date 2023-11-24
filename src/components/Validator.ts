@@ -1,6 +1,6 @@
 import { Piece } from "./Board";
 
-export const getMoves = (piece: number, cordinateX: number, cordinateY: number, board: number[][]) => {
+export const getMoves = (piece: number, cordinateX: number, cordinateY: number, board: number[][]) => { //
     const movesForPiece: number[][] = getMovesForPiece(piece, cordinateX, cordinateY, board);
 
     if(Math.abs(piece) === Piece.KING || Math.abs(piece) === Piece.KNIGHT || Math.abs(piece) === Piece.PAWN) {
@@ -10,7 +10,7 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
             if(newX < 0 || newX > 7 || newY < 0 || newY > 7) {
                 return false;
             }
-            return !isPieceSameColour(board[newX][newY], piece);
+            return !isSameColour(board[newX][newY], piece);
         });
     }
 
@@ -27,7 +27,7 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
                 allMovesForPiece.push([m[0] * i, m[1] * i]);
                 continue;
             }
-            else if(!isPieceSameColour(potentialSquare, piece)) {
+            else if(!isSameColour(potentialSquare, piece)) {
                 allMovesForPiece.push([m[0] * i, m[1] * i]);
             }
             break;
@@ -87,17 +87,10 @@ export const getMovesForPiece = (piece: number, cordinateX: number, cordinateY: 
 }
 
 //returns list of attack moves for a piece to show a circle around potential prey or a list of all squares under attack that king cannot go to
-export const getAttackMoves = (piece: number, fromX: number, fromY: number, possibleMoves: number[][], board: number[][], potentialAttacks: boolean = false) => {
-    const attacks: number[][] = [];
-    possibleMoves.forEach(m => {
-        if(!potentialAttacks && board[fromX + m[0]][fromY + m[1]] !== 0 && !isPieceSameColour(board[fromX + m[0]][fromY + m[1]], piece)) {
-            attacks.push([fromX + m[0], fromY + m[1]]);
-        }
-        else if(potentialAttacks && board[fromX + m[0]][fromY + m[1]] === 0) {
-            attacks.push([fromX + m[0], fromY + m[1]]);
-        }
-    });
-    return attacks;
+export const getAttackMoves = (piece: number, fromX: number, fromY: number, possibleMoves: number[][], board: number[][]) => {
+    return possibleMoves
+                .filter(m => board[fromX + m[0]][fromY + m[1]] !== 0 && !isSameColour(board[fromX + m[0]][fromY + m[1]], piece))
+                .map(m => [fromX + m[0], fromY + m[1]]);
 }
 
 //filters list of valid moves to prevent checking the king and enables moves that defend from checking
@@ -194,8 +187,4 @@ const copy2DArray = (array: any[][]) => {
 
 export const isSameColour = (piece: number, colour: number) => {
     return (piece > 0 && colour > 0) || (piece < 0 && colour < 0)
-}
-
-export const isPieceSameColour = (piece1: number, piece2: number) => {
-    return (piece1 > 0 && piece2 > 0) || (piece1 < 0 && piece2 < 0);
 }

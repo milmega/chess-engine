@@ -71,6 +71,28 @@
     border-radius: 20px;
 }
 
+.last-move-light-dot {
+    background-color: #dbdd71;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+}
+
+.last-move-dark-dot {
+    background-color: #a8b83c;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+}
+
+.last-move-square-dark {
+    background-color: #baca44;
+}
+
+.last-move-square-light {
+    background-color: #f4f67d
+}
+
 .red-square {
     border: 2px solid red;
 }
@@ -81,6 +103,14 @@
 
 .dark-gray-circle {
     background-color: #6b894b;
+}
+
+.last-move-light-circle {
+    background-color: #dbdd71;
+}
+
+.last-move-dark-circle {
+    background-color: #a8b83c;
 }
 
 .outer-circle {
