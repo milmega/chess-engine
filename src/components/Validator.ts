@@ -181,9 +181,14 @@ const getCastlingMoves = (colour: number, castling: boolean[], board: number[][]
     return castlingMoves;
 }
 
-const copy2DArray = (array: any[][]) => {
+export const copy2DArray = (array: any[][]) => {
     return array.map(x => [...x]);
 }
+
+export const copy3DArray = (list: any[][][]) => {
+    return list.map(array => copy2DArray(array));
+  };
+  
 
 export const isSameColour = (piece: number, colour: number) => {
     return (piece > 0 && colour > 0) || (piece < 0 && colour < 0)
