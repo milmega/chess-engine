@@ -7,13 +7,29 @@ export default class MoveGeneratorService {
     this.baseUrl = baseUrl;
   }
 
-  async getMoveData(board: string, colour: number, whiteKing: number, blackKing: number, whiteCastling: string, blackCastling: string): Promise<string> {
+  async getMoveData(start: number, destination: number, colour: number): Promise<string> {
+    const data = {
+      start: start,
+      destination: destination,
+      colour: colour
+    };
+
     try {
-        const response: AxiosResponse<string> = 
-          await axios.get<string>(`${this.baseUrl}/move?board=${board}&colour=${colour}&whiteKing=${whiteKing}&blackKing=${blackKing}&whiteCastling=${whiteCastling}&blackCastling=${blackCastling}`);
-        return response.data;
-    } catch (error) {
-        throw new Error('Error fetching user data');
+      const response: AxiosResponse<string> = await axios.get<string>(`${this.baseUrl}/move`, {params: data});
+      return response.data;
+    } catch(error) {
+      throw new Error('Error fetching user data:' + error);
     }
   }
+
+  async resetBoard() {
+    axios.post(`${this.baseUrl}/reset`)
+      .then(response => {
+        console.log('Reset successful');
+      })
+      .catch(error => {
+        console.error('Error making the request:', error);
+      });
+  }
+
 }
