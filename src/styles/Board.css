@@ -9,12 +9,39 @@
     grid-template-columns: repeat(8, 0fr);
     border: 3px solid black;
     width: min-content;
-    margin: 40px;
+    margin: 40px 40px 0 40px;
     opacity: 40%;
 }
 
 .board-active {
     opacity: 100%;
+}
+
+.under-board {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+.move-buttons-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.prev-move-button {
+    background-color: red;
+    align-self: flex-end;
+}
+
+.next-move-button {
+    background-color: green;
+}
+
+.timer {
+    background-color: yellow;
 }
 
 .banner {
