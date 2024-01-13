@@ -5,7 +5,7 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
     const lastMovePiece = lastMove[0] > -1 ? Math.abs(board[lastMove[2]][lastMove[3]]) : 0;
 
     if(lastMove.length > 0 && lastMove[0] > -1 &&  Math.abs(piece) === Piece.PAWN && lastMovePiece === Piece.PAWN) {
-        const enpassant = getEnpassantMoves(piece, cordinateX, cordinateY, lastMove);
+        const enpassant = getEnpassantMove(piece, cordinateX, cordinateY, lastMove);
         if(enpassant.length > 0) {
             movesForPiece.push(enpassant);
         }
@@ -95,7 +95,7 @@ export const getMovesForPiece = (piece: number, cordinateX: number, cordinateY: 
 }
 
 // cordinateX and cordinateY are cordinates of the player's pawn, lastMove are cordinates from and to of the computer
-const getEnpassantMoves = (piece: number, cordinateX: number, cordinateY: number, [fromX, fromY, toX, toY]: number[]) => {
+const getEnpassantMove = (piece: number, cordinateX: number, cordinateY: number, [fromX, fromY, toX, toY]: number[]) => {
     if(Math.abs(toX - fromX) > 1 && cordinateX === toX && Math.abs(cordinateY - toY) === 1) {
         return [piece > 0 ? -1 : 1, toY-cordinateY];
     }
