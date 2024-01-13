@@ -36,6 +36,7 @@ function App() {
 
   const playComputer = () => {
     console.log("playing computer");
+    moveGeneratorService.resetBoard();
     setGameMode("computer");
   }
 

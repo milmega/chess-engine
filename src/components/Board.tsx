@@ -26,7 +26,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const [chosenSquareY, setChosenSquareY] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<number[][]>([]);
     const [potentialAttacks, setPotentialAttacks] = useState<number[][]>([]);
-    const [lastMove, setLastMove] = useState<number[]>([-1, -1, -1, -1]); //coordinates of last move, index 0 and 1 are for square "from", index 2 and 3 are for square "to"
+    const lastMove = useRef([-1, -1, -1, -1]);
     const colourToMove = useRef(1);
     const [whiteKingPosition, setWhiteKingPosition] = useState([7, 4]);
     const [blackKingPosition, setBlackKingPosition] = useState([0, 6]);
@@ -70,7 +70,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         setBlackKingPosition([0, 4]);
         setWhiteCastling([false, false, false]);
         setBlackCastling([false, false, false]);
-        setLastMove([-1, -1, -1, -1]);
+        lastMove.current = [-1, -1, -1, -1];
         setCurrentBoard([
             [-4, -2, -3, -5, -6, -3, -2, -4],
             [-1, -1, -1, -1, -1, -1, -1, -1],
@@ -108,7 +108,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             }
             const kingPosition = color > 0 ? whiteKingPosition : blackKingPosition;
             const castling = color > 0 ? whiteCastling : blackCastling;
-            const validMoves = getValidMoves(piece, getMoves(piece, cordinateX, cordinateY, lastMove, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
+            const validMoves = getValidMoves(piece, getMoves(piece, cordinateX, cordinateY, lastMove.current, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
             const attacks = getAttackMoves(piece, cordinateX, cordinateY, validMoves, currentBoard);
             
             setPotentialAttacks(attacks);
@@ -181,19 +181,21 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     } else {
                         tempBoard[cordinateX][cordinateY] = tempBoard[fromX][fromY];
                     } 
+                } else {
+                    tempBoard[cordinateX][cordinateY] = tempBoard[fromX][fromY];
                 }
                 tempBoard[fromX][fromY] = 0;
-                setLastMove([fromX, fromY, cordinateX, cordinateY]);
+                lastMove.current = [fromX, fromY, cordinateX, cordinateY]; //TODO; should it be cloned?
                 console.log((color > 0 ? "White" : "Black") + " from (" + fromX + ", " + fromY + ") to (" + cordinateX + ", " + cordinateY + ")");
                 setCurrentBoard(tempBoard);
 
                 const colour = tempBoard[cordinateX][cordinateY] > 0 ? 1 : -1;
                 const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
-                if(isKingCheckmated(kingPosition, colour, lastMove, currentBoard)){
+                if(isKingCheckmated(kingPosition, colour, lastMove.current, currentBoard)){
                     onGameEnd(colour);
                 } else {
                     addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    colourToMove.current = -colourToMove.current //delete it for single player
+                    //colourToMove.current = -colourToMove.current //delete it for single player
                     if(gameMode.startsWith("computer") && compMove.length === 0) {
                         getComputerMove(-color, fromX*8+fromY, cordinateX*8+cordinateY);
                     }
@@ -234,7 +236,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
 
     const isCellPartOfLastMove = (x: number, y: number) => {
-        return (x === lastMove[0] && y === lastMove[1]) || (x === lastMove[2] && y === lastMove[3])
+        return (x === lastMove.current[0] && y === lastMove.current[1]) || (x === lastMove.current[2] && y === lastMove.current[3])
     }
 
     const addToBoardHistory = (board: number[][], colour: number) => {
