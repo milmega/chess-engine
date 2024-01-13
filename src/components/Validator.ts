@@ -1,8 +1,16 @@
 import { Piece } from "./Board";
 
-export const getMoves = (piece: number, cordinateX: number, cordinateY: number, board: number[][]) => { //
+export const getMoves = (piece: number, cordinateX: number, cordinateY: number, lastMove: number[] = [], board: number[][]) => { // TODO: add cache for moves in the same ply
     const movesForPiece: number[][] = getMovesForPiece(piece, cordinateX, cordinateY, board);
+    const lastMovePiece = lastMove[0] > -1 ? Math.abs(board[lastMove[2]][lastMove[3]]) : 0;
 
+    if(lastMove.length > 0 && lastMove[0] > -1 &&  Math.abs(piece) === Piece.PAWN && lastMovePiece === Piece.PAWN) {
+        const enpassant = getEnpassantMoves(piece, cordinateX, cordinateY, lastMove);
+        if(enpassant.length > 0) {
+            movesForPiece.push(enpassant);
+        }
+    }
+    
     if(Math.abs(piece) === Piece.KING || Math.abs(piece) === Piece.KNIGHT || Math.abs(piece) === Piece.PAWN) {
         return movesForPiece.filter(m => {
             let newX = cordinateX + m[0];
@@ -86,6 +94,14 @@ export const getMovesForPiece = (piece: number, cordinateX: number, cordinateY: 
     return [];
 }
 
+// cordinateX and cordinateY are cordinates of the player's pawn, lastMove are cordinates from and to of the computer
+const getEnpassantMoves = (piece: number, cordinateX: number, cordinateY: number, [fromX, fromY, toX, toY]: number[]) => {
+    if(Math.abs(toX - fromX) > 1 && cordinateX === toX && Math.abs(cordinateY - toY) === 1) {
+        return [piece > 0 ? -1 : 1, toY-cordinateY];
+    }
+    return [];
+}
+
 //returns list of attack moves for a piece to show a circle around potential prey or a list of all squares under attack that king cannot go to
 export const getAttackMoves = (piece: number, fromX: number, fromY: number, possibleMoves: number[][], board: number[][]) => {
     return possibleMoves
@@ -116,13 +132,13 @@ export const getValidMoves = (piece: number, moves: number[][], fromX: number, f
 }
 
 //checks if king in checkmated
-export const isKingCheckmated = (kingPosition: number[], colour: number, board: number[][]) => {
+export const isKingCheckmated = (kingPosition: number[], colour: number, lastMove: number[], board: number[][]) => {
     for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 8; j++) {
             if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
                 continue;
             }
-            const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, board), i, j, kingPosition, [false, false, false], board);
+            const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, lastMove, board), i, j, kingPosition, [false, false, false], board);
             if(moves.length > 0) {
                 return false;
             }
@@ -139,7 +155,7 @@ const isKingUnderCheck = (kingX: number, kingY: number, board: number[][]) => {
             if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
                 continue;
             }
-            const moves = getMoves(board[i][j], i, j, board);
+            const moves = getMoves(board[i][j], i, j, [], board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves
             const attackMoves = getAttackMoves(board[i][j], i, j, moves, board);
 
             if(attackMoves.some(move => kingX === move[0] && kingY === move[1])) {
@@ -162,12 +178,12 @@ const getCastlingMoves = (colour: number, castling: boolean[], board: number[][]
             break;
         }
         for(let j = 0; j < 8; j++) {
-            if(board[i][j] === 0 || board[i][j]*colour > 0) {
+            if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
                 continue;
             }
 
-            const moves = getMoves(board[i][j], i, j, board);
-            leftCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j < 5);
+            const moves = getMoves(board[i][j], i, j, [], board);
+            leftCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j < 5); //wtf did I do here? 
             rightCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j > 3);
         }
     }

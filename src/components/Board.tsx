@@ -108,9 +108,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             }
             const kingPosition = color > 0 ? whiteKingPosition : blackKingPosition;
             const castling = color > 0 ? whiteCastling : blackCastling;
-            const validMoves = getValidMoves(piece, getMoves(piece, cordinateX, cordinateY, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
+            const validMoves = getValidMoves(piece, getMoves(piece, cordinateX, cordinateY, lastMove, currentBoard), cordinateX, cordinateY, kingPosition, castling, currentBoard);
             const attacks = getAttackMoves(piece, cordinateX, cordinateY, validMoves, currentBoard);
-    
+            
             setPotentialAttacks(attacks);
             setPotentialMoves(validMoves);
             setChosenSquareX(cordinateX);
@@ -172,10 +172,15 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     }
                 }
                 // FIGURE MOVE
-                if(Math.abs(currentBoard[fromX][fromY]) === Piece.PAWN && (cordinateX === 0 || cordinateX === 7)) {
-                    tempBoard[cordinateX][cordinateY] = Piece.QUEEN * color;
-                } else {
-                    tempBoard[cordinateX][cordinateY] = tempBoard[fromX][fromY];
+                if(Math.abs(currentBoard[fromX][fromY]) === Piece.PAWN ) {
+                   if(Math.abs(cordinateY-fromY) === 1 && currentBoard[cordinateX][cordinateY] === 0) { //en passant move
+                        tempBoard[fromX][cordinateY] = 0;
+                    }  
+                    if(cordinateX === 0 || cordinateX === 7) { // getting a pawn to the last row
+                        tempBoard[cordinateX][cordinateY] = Piece.QUEEN * color;
+                    } else {
+                        tempBoard[cordinateX][cordinateY] = tempBoard[fromX][fromY];
+                    } 
                 }
                 tempBoard[fromX][fromY] = 0;
                 setLastMove([fromX, fromY, cordinateX, cordinateY]);
@@ -184,11 +189,11 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
 
                 const colour = tempBoard[cordinateX][cordinateY] > 0 ? 1 : -1;
                 const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
-                if(isKingCheckmated(kingPosition, colour, currentBoard)){
+                if(isKingCheckmated(kingPosition, colour, lastMove, currentBoard)){
                     onGameEnd(colour);
                 } else {
                     addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    //colourToMove.current = -colourToMove.current //delete it for single player
+                    colourToMove.current = -colourToMove.current //delete it for single player
                     if(gameMode.startsWith("computer") && compMove.length === 0) {
                         getComputerMove(-color, fromX*8+fromY, cordinateX*8+cordinateY);
                     }
