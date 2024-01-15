@@ -17,6 +17,10 @@
     opacity: 100%;
 }
 
+.board-rotated {
+    rotate: 180deg;
+}
+
 .under-board {
     display: flex;
     flex-direction: row;
@@ -62,6 +66,12 @@
     opacity: 100%;
     font-weight: 800;
     font-size: 100px;
+}
+
+.banner-king {
+    margin-left: 100px;
+    margin-right: 100px;
+    cursor: pointer;
 }
 
 .square {
@@ -120,8 +130,8 @@
     background-color: #f4f67d
 }
 
-.red-square {
-    border: 2px solid red;
+.rotated-square {
+    transform: rotate(180deg);
 }
 
 .light-gray-circle {

@@ -12,51 +12,57 @@ import QueenBlack from "./pieces/QueenBlack";
 import QueenWhite from "./pieces/QueenWhite";
 import RookWhite from "./pieces/RookWhite";
 import RookBlack from "./pieces/RookBlack";
-import { Piece } from "./Board";
+import { Piece } from "./Piece";
 
 type SquareProps = {
     piece: number;
+    scale: string;
 }
 
-const Square = (props: SquareProps) => {
-    if (props.piece === Piece.PAWN) {
-        return <PawnWhite/>
+const Square = ({piece, scale}: SquareProps) => {
+    if (piece === Piece.PAWN) {
+        return <PawnWhite scale={scale}/>
     }
-    if (props.piece === -Piece.PAWN) {
-        return <PawnBlack/>
+    if (piece === -Piece.PAWN) {
+        return <PawnBlack scale={scale}/>
     }
-    if(props.piece === Piece.ROOK) {
-        return <RookWhite/>
+    if(piece === Piece.ROOK) {
+        return <RookWhite scale={scale}/>
     }
-    if(props.piece === -Piece.ROOK) {
-        return<RookBlack/>
+    if(piece === -Piece.ROOK) {
+        return<RookBlack scale={scale}/>
     }
-    if (props.piece === Piece.KNIGHT) {
-        return <KnightWhite/>
+    if (piece === Piece.KNIGHT) {
+        return <KnightWhite scale={scale}/>
     }
-    if (props.piece === -Piece.KNIGHT) {
-        return <KnightBlack/>
+    if (piece === -Piece.KNIGHT) {
+        return <KnightBlack scale={scale}/>
     }
-    if (props.piece === Piece.BISHOP) {
-        return <BishopWhite/>
+    if (piece === Piece.BISHOP) {
+        return <BishopWhite scale={scale}/>
     }
-    if (props.piece === -Piece.BISHOP) {
-        return <BishopBlack/>
+    if (piece === -Piece.BISHOP) {
+        return <BishopBlack scale={scale}/>
     }
-    if (props.piece === Piece.QUEEN) {
-        return <QueenWhite/>
+    if (piece === Piece.QUEEN) {
+        return <QueenWhite scale={scale}/>
     }
-    if (props.piece === -Piece.QUEEN) {
-        return <QueenBlack/>
+    if (piece === -Piece.QUEEN) {
+        return <QueenBlack scale={scale}/>
     }
-    if (props.piece === Piece.KING) {
-        return <KingWhite/>
+    if (piece === Piece.KING) {
+        return <KingWhite scale={scale}/>
     } 
-    if (props.piece === -Piece.KING) {
-        return <KingBlack/>
+    if (piece === -Piece.KING) {
+        return <KingBlack scale={scale}/>
     }
-    return (<div>{props.piece}</div>);
+    return (<div>{piece}</div>);
     
 }
 
 export default Square;
+
+Square.defaultProps = {
+    piece: Piece.PAWN,
+    scale: "2"
+}

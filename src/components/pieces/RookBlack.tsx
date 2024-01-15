@@ -1,7 +1,11 @@
-const RookBlack = () => {
+type PieceProps = {
+    scale: string;
+  }
+
+const RookBlack = ({scale}: PieceProps) => {
 
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform="scale(2)">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform={`scale(${scale})`}>
             <g opacity="1" fill="#000000" fillOpacity="1" fillRule="evenodd" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeMiterlimit="4" strokeDasharray="none" strokeOpacity="1" transform="translate(0,0.3)">
                 <path
                     d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z "

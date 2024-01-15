@@ -1,6 +1,10 @@
-const KingWhite = () => {
+type PieceProps = {
+    scale: string;
+}
+
+const KingWhite = ({scale}: PieceProps) => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" transform="scale(2)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" transform={`scale(${scale})`}>
             <g fill="none" fillRule="evenodd" stroke="#000" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
                 <path strokeLinejoin="miter" d="M22.5 11.63V6M20 8h5"/>
                 <path fill="#fff" strokeLinecap="butt" strokeLinejoin="miter" d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/>

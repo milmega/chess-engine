@@ -1,4 +1,4 @@
-import { Piece } from "./Board";
+import { Piece } from "./Piece";
 
 export const getMoves = (piece: number, position: number, lastMove: number[] = [], board: number[]) => { // TODO: add cache for moves in the same ply
     const movesForPiece: number[][] = getMovesForPiece(piece, position, board);
@@ -151,7 +151,7 @@ export const isKingCheckmated = (kingPosition: number, colour: number, lastMove:
 const isKingUnderCheck = (kingPosition: number, board: number[]) => {
     const colour = board[kingPosition] > 0 ? 1 : -1;
     for (let i = 0; i < 64; i++) {
-        if (board[i] == 0 || isSameColour(colour, board[i])) {
+        if (board[i] === 0 || isSameColour(colour, board[i])) {
             continue;
         }
         const moves = getMoves(board[i], i, [], board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves

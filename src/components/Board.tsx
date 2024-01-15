@@ -1,24 +1,15 @@
 import Square from "./Square";
 import "../styles/Board.css"
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { copy2DArray, copy3DArray, getAttackMoves, getMoves, getValidMoves, isKingCheckmated, isSameColour } from "./Validator";
 import React from "react";
 import MoveGeneratorService from "../services/MoveGeneratorService";
+import { Piece } from "./Piece";
 
 interface Props {
     onGameEnd: (colour: number) => void,
     gameMode: string,
     playerColour: number
-}
-
-export enum Piece {
-    EMPTY = 0,
-    PAWN = 1,
-    KNIGHT = 2,
-    BISHOP = 3,
-    ROOK = 4,
-    QUEEN = 5,
-    KING = 6
 }
 
 const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref) => {
@@ -27,7 +18,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const [potentialAttacks, setPotentialAttacks] = useState<number[]>([]);
     const lastMove = useRef<number[]>([]);
     const colourToMove = useRef(1);
-    const [computerColour, setComputerColour] = useState(-1);
     const [whiteKingPosition, setWhiteKingPosition] = useState(60);
     const [blackKingPosition, setBlackKingPosition] = useState(4);
     const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
@@ -92,7 +82,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         if(gameMode.startsWith("menu")) {
             return;
         }
-        if(gameMode.startsWith("computer") && compMove === -1 && color === computerColour) {
+        if(gameMode.startsWith("computer") && compMove === -1 && color === -playerColour) {
+            return;
+        }
+        if(playerColour === 0) { // if the player has not chosen a colour return
             return;
         }
         if(whiteMoveHistoryIndex+1 < whiteMoveHistory.length || blackMoveHistoryIndex+1 < blackMoveHistory.length) {
@@ -201,7 +194,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         }
     }
     
-    const makeComputerMove = (colour: number, start: number, destination: number) => { //TODO: make a feature so user can choose white or black
+    // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
+    const makeComputerMove = (colour: number, start: number, destination: number) => {
         colourToMove.current = colour;
         moveGeneratorService
             .getMoveData(start, destination, colour)
@@ -260,13 +254,19 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         console.log("next")
     }
 
+    useEffect(() => {
+        if(gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
+            makeComputerMove(1, -1, -1);
+        }
+    }, [playerColour]);
+
     React.useImperativeHandle(ref, () => ({
         reset,
     }));
 
     return (
         <>
-            <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : ""}`}>
+            <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : "" } ${playerColour === -1 ? "board-rotated" : ""}`}>
                 {
                 currentBoard.map((element, index) => {
                     const row = Math.floor(index / 8);
@@ -279,6 +279,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                                 key={index}
                                 onClick={() => makeMove(index)}
                                 className={`square
+                                    ${playerColour === -1 ? "rotated-square" : ""}
                                     ${row === chosenX && column === chosenY
                                         ? "chosen-square" 
                                         : isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
@@ -302,11 +303,13 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                         <div
                             key={index}
                             onClick={() => makeMove(index)}
-                            className={`square ${row === chosenX && column === chosenY
-                                ? "chosen-square"
-                                : isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
+                            className={`square
+                                ${playerColour === -1 ? "rotated-square" : ""}
+                                ${row === chosenX && column === chosenY
+                                    ? "chosen-square"
+                                    : isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
                             {element !== 0 && potentialAttacks.some(attack => attack === index) && 
-                                <div className={`outer-circle 
+                                <div className={`outer-circle
                                     ${isCellPartOfLastMove(index) ? "last-move-light-circle" : "light-gray-circle"}`}>
                                     <div className={`inner-circle
                                         ${isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>

@@ -1,6 +1,10 @@
-const BishopWhite = () => {
+type PieceProps = {
+    scale: string;
+}
+
+const BishopWhite = ({scale}: PieceProps) => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform="scale(2)">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform={`scale(${scale})`}>
             <g opacity="1" fill="none" fillRule="evenodd" fillOpacity="1" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeMiterlimit="4" strokeDasharray="none" strokeOpacity="1" transform="translate(0,0.6)">
                 <g fill="#ffffff" stroke="#000000" strokeLinecap="butt">
                     <path d="M 9,36 C 12.39,35.03 19.11,36.43 22.5,34 C 25.89,36.43 32.61,35.03 36,36 C 36,36 37.65,36.54 39,38 C 38.32,38.97 37.35,38.99 36,38.5 C 32.61,37.53 25.89,38.96 22.5,37.5 C 19.11,38.96 12.39,37.53 9,38.5 C 7.65,38.99 6.68,38.97 6,38 C 7.35,36.54 9,36 9,36 z"/>
