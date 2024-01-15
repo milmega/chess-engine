@@ -2,9 +2,8 @@ import { Piece } from "./Board";
 
 export const getMoves = (piece: number, cordinateX: number, cordinateY: number, lastMove: number[] = [], board: number[][]) => { // TODO: add cache for moves in the same ply
     const movesForPiece: number[][] = getMovesForPiece(piece, cordinateX, cordinateY, board);
-    const lastMovePiece = lastMove[0] > -1 ? Math.abs(board[lastMove[2]][lastMove[3]]) : 0;
 
-    if(lastMove.length > 0 && lastMove[0] > -1 &&  Math.abs(piece) === Piece.PAWN && lastMovePiece === Piece.PAWN) {
+    if(lastMove.length > 0 && lastMove[0] > -1 &&  Math.abs(piece) === Piece.PAWN && Math.abs(board[lastMove[2]][lastMove[3]]) === Piece.PAWN) {
         const enpassant = getEnpassantMove(piece, cordinateX, cordinateY, lastMove);
         if(enpassant.length > 0) {
             movesForPiece.push(enpassant);

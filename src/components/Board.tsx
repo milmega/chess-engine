@@ -28,6 +28,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const [potentialAttacks, setPotentialAttacks] = useState<number[][]>([]);
     const lastMove = useRef([-1, -1, -1, -1]);
     const colourToMove = useRef(1);
+    const [computerColour, setComputerColour] = useState(-1);
     const [whiteKingPosition, setWhiteKingPosition] = useState([7, 4]);
     const [blackKingPosition, setBlackKingPosition] = useState([0, 6]);
     const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
@@ -92,7 +93,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         if(gameMode.startsWith("menu")) {
             return;
         }
-        if(gameMode.startsWith("computer") && compMove.length === 0 && color === -1) { //TODO: make it block moves when it's computers turn. For now it's working but fix it when it's possible to play with blacks
+        if(gameMode.startsWith("computer") && compMove.length === 0 && color === computerColour) {
             return;
         }
 
@@ -207,7 +208,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             setChosenSquareY(-1);
         }
     }
-    //TODO: when the only move is king taking a queen, the king dissapears 
+    
     const getComputerMove = (colour: number, start: number, destination: number) => { //TODO: make a feature so user can choose white or black
         colourToMove.current = colour;
         moveGeneratorService
