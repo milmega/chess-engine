@@ -1,9 +1,10 @@
 import { Piece } from "./Board";
 
-export const getMoves = (piece: number, cordinateX: number, cordinateY: number, lastMove: number[] = [], board: number[][]) => { // TODO: add cache for moves in the same ply
-    const movesForPiece: number[][] = getMovesForPiece(piece, cordinateX, cordinateY, board);
-
-    if(lastMove.length > 0 && lastMove[0] > -1 &&  Math.abs(piece) === Piece.PAWN && Math.abs(board[lastMove[2]][lastMove[3]]) === Piece.PAWN) {
+export const getMoves = (piece: number, position: number, lastMove: number[] = [], board: number[]) => { // TODO: add cache for moves in the same ply
+    const movesForPiece: number[][] = getMovesForPiece(piece, position, board);
+    const cordinateX = Math.floor(position / 8);
+    const cordinateY = position % 8;
+    if(lastMove.length > 0 &&  Math.abs(piece) === Piece.PAWN && Math.abs(board[lastMove[1]]) === Piece.PAWN) {
         const enpassant = getEnpassantMove(piece, cordinateX, cordinateY, lastMove);
         if(enpassant.length > 0) {
             movesForPiece.push(enpassant);
@@ -11,14 +12,15 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
     }
     
     if(Math.abs(piece) === Piece.KING || Math.abs(piece) === Piece.KNIGHT || Math.abs(piece) === Piece.PAWN) {
-        return movesForPiece.filter(m => {
+        var x = movesForPiece.filter(m => {
             let newX = cordinateX + m[0];
             let newY = cordinateY + m[1];
             if(newX < 0 || newX > 7 || newY < 0 || newY > 7) {
                 return false;
             }
-            return !isSameColour(board[newX][newY], piece);
+            return !isSameColour(board[newX*8+newY], piece);
         });
+        return x;
     }
 
     const allMovesForPiece: number[][] = [];
@@ -29,7 +31,7 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
             if(newX < 0 || newX > 7 || newY < 0 || newY > 7) {
                 break;
             }
-            let potentialSquare = board[newX][newY]; 
+            let potentialSquare = board[newX*8+newY]; 
             if(potentialSquare === 0) {
                 allMovesForPiece.push([m[0] * i, m[1] * i]);
                 continue;
@@ -43,33 +45,35 @@ export const getMoves = (piece: number, cordinateX: number, cordinateY: number, 
     return allMovesForPiece;
 }
 
-export const getMovesForPiece = (piece: number, cordinateX: number, cordinateY: number, board: number[][]) => {
+export const getMovesForPiece = (piece: number, position: number, board: number[]) => {
+    const cordinateX = Math.floor(position/8);
+    const cordinateY = position%8;
     if(Math.abs(piece) === Piece.PAWN) {
         let pawnMoves: number[][] = [];
         if(piece > 0) {
-            if(board[cordinateX - 1][cordinateY] === 0) {
+            if(board[(cordinateX - 1)*8+cordinateY] === 0) {
                 pawnMoves.push([-1, 0]);
             }
-            if(cordinateX === 6 && board[5][cordinateY] === 0 && board[4][cordinateY] === 0) {
+            if(cordinateX === 6 && board[40+cordinateY] === 0 && board[32+cordinateY] === 0) {
                 pawnMoves.push([-2, 0]);
             }
-            if(cordinateX > 0 && cordinateY > 0 && board[cordinateX - 1][cordinateY - 1] < 0) {
+            if(cordinateX > 0 && cordinateY > 0 && board[(cordinateX - 1)*8+cordinateY - 1] < 0) {
                 pawnMoves.push([-1, -1]);
             }
-            if(cordinateX > 0 && cordinateY < 7 && board[cordinateX - 1][cordinateY + 1] < 0) {
+            if(cordinateX > 0 && cordinateY < 7 && board[(cordinateX - 1)*8+cordinateY + 1] < 0) {
                 pawnMoves.push([-1, 1])
             }
         } else { //black pawn
-            if(board[cordinateX + 1][cordinateY] === 0) {
+            if(board[(cordinateX + 1)*8+cordinateY] === 0) {
                 pawnMoves.push([1, 0]);
             }
-            if(cordinateX === 1 && board[2][cordinateY] === 0 && board[3][cordinateY] === 0) {
+            if(cordinateX === 1 && board[16+cordinateY] === 0 && board[24+cordinateY] === 0) {
                 pawnMoves.push([2, 0]);
             }
-            if(cordinateX < 7 && cordinateY > 0 && board[cordinateX + 1][cordinateY - 1] > 0) {
+            if(cordinateX < 7 && cordinateY > 0 && board[(cordinateX + 1)*8+cordinateY - 1] > 0) {
                 pawnMoves.push([1, -1]);
             }
-            if(cordinateX < 7 && cordinateY < 7 && board[cordinateX + 1][cordinateY + 1] > 0) {
+            if(cordinateX < 7 && cordinateY < 7 && board[(cordinateX + 1)*8+cordinateY + 1] > 0) {
                 pawnMoves.push([1, 1])
             }
         }
@@ -93,35 +97,34 @@ export const getMovesForPiece = (piece: number, cordinateX: number, cordinateY: 
     return [];
 }
 
-// cordinateX and cordinateY are cordinates of the player's pawn, lastMove are cordinates from and to of the computer
-const getEnpassantMove = (piece: number, cordinateX: number, cordinateY: number, [fromX, fromY, toX, toY]: number[]) => {
-    if(Math.abs(toX - fromX) > 1 && cordinateX === toX && Math.abs(cordinateY - toY) === 1) {
-        return [piece > 0 ? -1 : 1, toY-cordinateY];
+// x and y are cordinates of the player's pawn, lastMove are cordinates from and to of the computer
+const getEnpassantMove = (piece: number, x: number, y: number, [lastMoveFrom, lastMoveTo]: number[]) => {
+    if(Math.abs(lastMoveTo - lastMoveFrom) > 8 && x === Math.floor(lastMoveTo/8) && Math.abs(y - lastMoveTo%8) === 1) {
+        return [piece > 0 ? -1 : 1, (lastMoveTo%8)-y];
     }
     return [];
 }
 
 //returns list of attack moves for a piece to show a circle around potential prey or a list of all squares under attack that king cannot go to
-export const getAttackMoves = (piece: number, fromX: number, fromY: number, possibleMoves: number[][], board: number[][]) => {
+export const getAttackMoves = (piece: number, fromPos: number, possibleMoves: number[][], board: number[]) => {
     return possibleMoves
-                .filter(m => board[fromX + m[0]][fromY + m[1]] !== 0 && !isSameColour(board[fromX + m[0]][fromY + m[1]], piece))
-                .map(m => [fromX + m[0], fromY + m[1]]);
+                .filter(m => board[fromPos + m[0] * 8 + m[1]] !== 0 && !isSameColour(board[fromPos + m[0] * 8 + m[1]], piece))
+                .map(m => fromPos + m[0] * 8 + m[1]);
 }
 
 //filters list of valid moves to prevent checking the king and enables moves that defend from checking
-export const getValidMoves = (piece: number, moves: number[][], fromX: number, fromY: number, kingPosition: number[], castling: boolean[], board: number[][]) => {   
+export const getValidMoves = (piece: number, moves: number[][], fromPos: number, kingPosition: number, castling: boolean[], board: number[]) => {   
     const newMoves = moves.filter(move => {
-        const newX = fromX + move[0];
-        const newY = fromY + move[1];
+        const toPosition = fromPos+move[0]*8+move[1];
 
-        const tempBoard = copy2DArray(board);
-        tempBoard[newX][newY] = piece;
-        tempBoard[fromX][fromY] = 0;
+        const tempBoard = [...board];
+        tempBoard[toPosition] = piece;
+        tempBoard[fromPos] = 0;
 
         if(Math.abs(piece) === Piece.KING) {
-            return !isKingUnderCheck(newX, newY, tempBoard);
+            return !isKingUnderCheck(toPosition, tempBoard);
         } else {
-            return !isKingUnderCheck(kingPosition[0], kingPosition[1], tempBoard);
+            return !isKingUnderCheck(kingPosition, tempBoard);
         }
     });
     if(Math.abs(piece) === Piece.KING && !castling[0] && (!castling[1] || !castling[2])) {
@@ -131,65 +134,57 @@ export const getValidMoves = (piece: number, moves: number[][], fromX: number, f
 }
 
 //checks if king in checkmated
-export const isKingCheckmated = (kingPosition: number[], colour: number, lastMove: number[], board: number[][]) => {
-    for(let i = 0; i < 8; i++) {
-        for(let j = 0; j < 8; j++) {
-            if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
-                continue;
-            }
-            const moves = getValidMoves(board[i][j], getMoves(board[i][j], i, j, lastMove, board), i, j, kingPosition, [false, false, false], board);
+export const isKingCheckmated = (kingPosition: number, colour: number, lastMove: number[], board: number[]) => {
+    for(let i = 0; i < 64; i++) {
+        if(board[i] === 0 || isSameColour(board[i], colour)) {
+            continue;
+        }
+        const moves = getValidMoves(board[i], getMoves(board[i], i, lastMove, board), i, kingPosition, [false, false, false], board);
             if(moves.length > 0) {
                 return false;
             }
-        }
     }
     return true;
 }
 
 //checks if king is under check
-const isKingUnderCheck = (kingX: number, kingY: number, board: number[][]) => {
-    const colour = board[kingX][kingY] > 0 ? 1 : -1;
-    for(let i = 0; i < 8; i++) {
-        for(let j = 0; j < 8; j++) {
-            if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
-                continue;
-            }
-            const moves = getMoves(board[i][j], i, j, [], board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves
-            const attackMoves = getAttackMoves(board[i][j], i, j, moves, board);
-
-            if(attackMoves.some(move => kingX === move[0] && kingY === move[1])) {
-                return true;
-            }
+const isKingUnderCheck = (kingPosition: number, board: number[]) => {
+    const colour = board[kingPosition] > 0 ? 1 : -1;
+    for (let i = 0; i < 64; i++) {
+        if (board[i] == 0 || isSameColour(colour, board[i])) {
+            continue;
+        }
+        const moves = getMoves(board[i], i, [], board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves
+        const attackMoves = getAttackMoves(board[i], i, moves, board);
+        if(attackMoves.some(move => kingPosition === move)) {
+            return true;
         }
     }
     return false;
 }
 
 //checks if castling is possible and returns an array with possible moves
-const getCastlingMoves = (colour: number, castling: boolean[], board: number[][]) => {
+const getCastlingMoves = (colour: number, castling: boolean[], board: number[]) => {
     const castlingMoves: number[][] = [];
     const row = colour === 1 ? 7 : 0;
     let leftCastlingEnabled: boolean = true;
     let rightCastlingEnabled: boolean = true;
 
-    for(let i = 0; i < 8; i++) {
+    for(let i = 0; i < 64; i++) {
         if(!leftCastlingEnabled && !rightCastlingEnabled) {
             break;
         }
-        for(let j = 0; j < 8; j++) {
-            if(board[i][j] === 0 || isSameColour(board[i][j], colour)) {
-                continue;
-            }
-
-            const moves = getMoves(board[i][j], i, j, [], board);
-            leftCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j < 5); //wtf did I do here? 
-            rightCastlingEnabled = !moves.some(move => move[0] + i === row && move[1] + j > 3);
+        if(board[i] === 0 || isSameColour(board[i], colour)) {
+            continue;
         }
+        const moves = getMoves(board[i], i, [], board);
+        leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5); //wtf did I do here? 
+        rightCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 > 3);
     }
-    if(!castling[1] && leftCastlingEnabled && board[row][1] === 0 && board[row][2] === 0 && board[row][3] === 0) { //if left rook hasn't moved
+    if(!castling[1] && leftCastlingEnabled && board[row*8+1] === 0 && board[row*8+2] === 0 && board[row*8+3] === 0) { //if left rook hasn't moved
         castlingMoves.push([0, -2]);
     }
-    if(!castling[2] && rightCastlingEnabled && board[row][5] === 0 && board[row][6] === 0) { //if right rook hasn't moved
+    if(!castling[2] && rightCastlingEnabled && board[row*8+5] === 0 && board[row*8+6] === 0) { //if right rook hasn't moved
         castlingMoves.push([0, 2]);
     }
 
