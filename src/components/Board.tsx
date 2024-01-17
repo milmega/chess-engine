@@ -1,10 +1,11 @@
 import Square from "./Square";
 import "../styles/Board.css"
 import { useEffect, useRef, useState } from "react";
-import { copy2DArray, copy3DArray, getAttackMoves, getMoves, getValidMoves, isKingCheckmated, isSameColour } from "./Validator";
+import { generateAllMoves, getAttackMoves, getValidMoves, isInCheck, isSameColour, isDraw } from "./MoveGenerator";
 import React from "react";
 import MoveGeneratorService from "../services/MoveGeneratorService";
 import { Piece } from "./Piece";
+import { Move } from "./Move";
 
 interface Props {
     onGameEnd: (colour: number) => void,
@@ -16,16 +17,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const [chosenSquare, setChosenSquare] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<number[][]>([]);
     const [potentialAttacks, setPotentialAttacks] = useState<number[]>([]);
-    const lastMove = useRef<number[]>([]);
-    const colourToMove = useRef(1);
     const [whiteKingPosition, setWhiteKingPosition] = useState(60);
     const [blackKingPosition, setBlackKingPosition] = useState(4);
     const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
     const [blackCastling, setBlackCastling] = useState([false, false, false]);
-    const [whiteMoveHistory, setWhiteMoveHistory] = useState<number[][][]>([]); // not working for now
-    const [whiteMoveHistoryIndex, setWhiteMoveHistoryIndex] = useState(-1); // not working for now
-    const [blackMoveHistory, setBlackMoveHistory] = useState<number[][][]>([]); // not working for now
-    const [blackMoveHistoryIndex, setBlackMoveHistoryIndex] = useState(-1); // not working for now
     const [currentBoard, setCurrentBoard] = useState([
         -4, -2, -3, -5, -6, -3, -2, -4,
         -1, -1, -1, -1, -1, -1, -1, -1,
@@ -35,16 +30,21 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         0, 0, 0, 0, 0, 0, 0, 0,
         1, 1, 1, 1, 1, 1, 1, 1,
         4, 2, 3, 5, 6, 3, 2, 4]);
+    const lastMove = useRef<number[]>([]);
+    const colourToMove = useRef(1); //TODO: colourToMove and colour are duplicates?
+    const material = useRef<number[][]>([[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]]); //white material, blackMaterial
+    const moveHistory = useRef<Move[]>([]); //TODO: add moveHistory
+    const historyIndex = useRef(-1);
 
      /*
-        [-4, -2, -3, -5, -6, -3, -2, -4],
-            [-1, -1, -1, -1, -1, -1, -1, -1],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [4, 2, 3, 5, 6, 3, 2, 4]
+        -4, -2, -3, -5, -6, -3, -2, -4,
+        -1, -1, -1, -1, -1, -1, -1, -1,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        4, 2, 3, 5, 6, 3, 2, 4]);
         */
 
     const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
@@ -53,12 +53,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         setChosenSquare(-1);
         setPotentialMoves([]);
         setPotentialAttacks([]);
-        colourToMove.current = 1;
         setWhiteKingPosition(60);
         setBlackKingPosition(4);
         setWhiteCastling([false, false, false]);
         setBlackCastling([false, false, false]);
-        lastMove.current = [];
         setCurrentBoard([
             -4, -2, -3, -5, -6, -3, -2, -4,
             -1, -1, -1, -1, -1, -1, -1, -1,
@@ -68,10 +66,15 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 1, 1, 1, 1,
             4, 2, 3, 5, 6, 3, 2, 4]);
+        colourToMove.current = 1;
+        lastMove.current = [];
+        material.current = [[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]];
+        moveHistory.current = [];
+        historyIndex.current = -1;
         moveGeneratorService.resetBoard();
     }
 
-    const makeMove = (position: number, compMove: number = -1, color: number = colourToMove.current) => { //starting square is taken from state unless computer makes move
+    const makeMove = (position: number, compMove: number = -1, colour: number = colourToMove.current) => { //starting square is taken from state unless computer makes move
         const fromX = compMove > -1 ? Math.floor(compMove / 8) : Math.floor(chosenSquare / 8);
         const fromY = compMove > -1 ? compMove % 8 : chosenSquare % 8;
         const fromPos = compMove > -1 ? compMove : chosenSquare;
@@ -82,22 +85,22 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         if(gameMode.startsWith("menu")) {
             return;
         }
-        if(gameMode.startsWith("computer") && compMove === -1 && color === -playerColour) {
+        if(gameMode.startsWith("computer") && compMove === -1 && colour === -playerColour) {
             return;
         }
         if(playerColour === 0) { // if the player has not chosen a colour return
             return;
         }
-        if(whiteMoveHistoryIndex+1 < whiteMoveHistory.length || blackMoveHistoryIndex+1 < blackMoveHistory.length) {
+        /*if(whiteMoveHistoryIndex+1 < whiteMoveHistory.length || blackMoveHistoryIndex+1 < blackMoveHistory.length) { TODO: implement move history
             return;
-        }
+        }*/
         if(fromPos === -1 || isSameColour(currentBoard[position], currentBoard[fromPos])) {
-            if(piece === 0 || !isSameColour(piece, color)){ // ignore if clicked on empty square or on opponent's piece
+            if(piece === 0 || !isSameColour(piece, colour)){ // ignore if clicked on empty square or on opponent's piece
                 return;
             }
-            const kingPosition = color > 0 ? whiteKingPosition : blackKingPosition;
-            const castling = color > 0 ? whiteCastling : blackCastling;
-            const validMoves = getValidMoves(piece, getMoves(piece, position, lastMove.current, currentBoard), position, kingPosition, castling, currentBoard);
+            const kingPosition = colour > 0 ? whiteKingPosition : blackKingPosition;
+            const castling = colour > 0 ? whiteCastling : blackCastling;
+            const validMoves = getValidMoves(piece, position, kingPosition, castling, lastMove.current, currentBoard);
             const attacks = getAttackMoves(piece, position, validMoves, currentBoard);
             setPotentialAttacks(attacks);
             setPotentialMoves(validMoves);
@@ -105,42 +108,50 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         } else {
             const pontentialMovesArray = compMove > -1 ? [[cordinateX-fromX, cordinateY-fromY]] : potentialMoves;
             if(pontentialMovesArray.some(m => fromX + m[0] === cordinateX && fromY + m[1] === cordinateY)) {
-                let tempBoard = currentBoard;
+                let tempBoard = currentBoard; //TODO; why am I using current board if I amde a tempBoard? Fixed it but is it ok?
+                const move: Move = new Move(tempBoard[fromPos], fromPos, position, colour, tempBoard[position]);
+
                 // WHITE CASTLING
-                if(currentBoard[fromPos] === Piece.KING) {
+                if(tempBoard[fromPos] === Piece.KING) {
                     setWhiteKingPosition(position);
                     setWhiteCastling([true, true, true]);
+                    move.castlingFlag = true;
                     if(Math.abs(cordinateY - fromY) > 1) { //if king is doing castling, move rook accordingly
                         if(cordinateY === 2) {
                             tempBoard[56] = Piece.EMPTY;
                             tempBoard[59] = Piece.ROOK;
+                            move.castlingPosition = 56;
                         } else {
                             tempBoard[63] = Piece.EMPTY;
                             tempBoard[61] = Piece.ROOK;
+                            move.castlingPosition = 63;
                         }
                     }
                 } 
                 // BLACK CASTLING
-                else if(currentBoard[fromPos] === -Piece.KING) {
+                else if(tempBoard[fromPos] === -Piece.KING) {
                     setBlackKingPosition(position);
                     setBlackCastling([true, true, true]);
+                    move.castlingFlag = true;
                     if(Math.abs(cordinateY - fromY) > 1) { //if king is doing castling, move rook accordingly
                         if(cordinateY === 2) {
                             tempBoard[0] = Piece.EMPTY;
                             tempBoard[3] = -Piece.ROOK;
+                            move.castlingPosition = 0;
                         } else {
                             tempBoard[7] = Piece.EMPTY;
                             tempBoard[5] = -Piece.ROOK;
+                            move.castlingPosition = 7;
                         }
                     }
                 }
                 //if you move a rook then disable castling
-                if(Math.abs(currentBoard[fromPos]) === Piece.ROOK) {
-                    if(currentBoard[fromPos] > 0 && fromX === 7 && (fromY === 0 || fromY === 7)) {
+                if(Math.abs(tempBoard[fromPos]) === Piece.ROOK) {
+                    if(tempBoard[fromPos] > 0 && fromX === 7 && (fromY === 0 || fromY === 7)) {
                         let tempCastling = whiteCastling;
                         tempCastling[fromY === 0 ? 1 : 2] = true;
                         setWhiteCastling(tempCastling);
-                    } else if(currentBoard[fromPos] < 0 && fromX === 0 && (fromY === 0 || fromY === 7)) {
+                    } else if(tempBoard[fromPos] < 0 && fromX === 0 && (fromY === 0 || fromY === 7)) {
                         let tempCastling = blackCastling;
                         tempCastling[fromY === 0 ? 1 : 2] = true;
                         setBlackCastling(tempCastling);
@@ -148,43 +159,60 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 }
                 //if a rook is captured then disable castling
                 if(Math.abs(tempBoard[position]) === Piece.ROOK) {
-                    if(currentBoard[position] > 0 && cordinateX === 7 && (cordinateY === 0 || cordinateY === 7)) {
+                    if(tempBoard[position] > 0 && cordinateX === 7 && (cordinateY === 0 || cordinateY === 7)) {
                         let tempCastling = whiteCastling;
                         tempCastling[cordinateY === 0 ? 1 : 2] = true;
                         setWhiteCastling(tempCastling);
-                    } else if(currentBoard[position] < 0 && cordinateX === 0 && (cordinateY === 0 || cordinateY === 7)){
+                    } else if(tempBoard[position] < 0 && cordinateX === 0 && (cordinateY === 0 || cordinateY === 7)){
                         let tempCastling = blackCastling;
                         tempCastling[cordinateY === 0 ? 1 : 2] = true;
                         setBlackCastling(tempCastling);
                     }
                 }
-                // FIGURE MOVE
-                if(Math.abs(currentBoard[fromPos]) === Piece.PAWN ) {
-                   if(Math.abs(cordinateY-fromY) === 1 && currentBoard[position] === 0) { //en passant move
+                // PIECE MOVE
+                if(Math.abs(tempBoard[fromPos]) === Piece.PAWN ) {
+                   if(Math.abs(cordinateY-fromY) === 1 && tempBoard[position] === 0) { //en passant move
                         tempBoard[fromX*8+cordinateY] = 0;
+                        move.enpassantFlag = true;
+                        move.enpassantPosition = fromX*8+cordinateY;
+                        material.current[colour > 0 ? 1 : 0][Piece.PAWN]--;
                     }  
                     if(cordinateX === 0 || cordinateX === 7) { // getting a pawn to the last row
-                        tempBoard[position] = Piece.QUEEN * color;
+                        tempBoard[position] = Piece.QUEEN * colour;
+                        move.promotionFlag = true;
+                        material.current[colour > 0 ? 0 : 1][Piece.QUEEN]++;
+                        material.current[colour > 0 ? 0 : 1][Piece.PAWN]--;
                     } else {
                         tempBoard[position] = tempBoard[fromPos];
+                        if(piece !== 0) {
+                            material.current[piece > 0 ? 0 : 1][Math.abs(piece)]--;
+                        }
                     } 
                 } else {
                     tempBoard[position] = tempBoard[fromPos];
+                    if(piece !== 0) {
+                        material.current[piece > 0 ? 0 : 1][Math.abs(piece)]--;
+                    }
                 }
                 tempBoard[fromPos] = 0;
+                moveHistory.current.push(move) //TODO: handle enpassant captures in 
                 lastMove.current = [fromPos, position];
-                console.log((color > 0 ? "White" : "Black") + " from (" + fromX + ", " + fromY + ") to (" + Math.floor(position/8) + ", " + position%8 + ")");
+                console.log((colour > 0 ? "White" : "Black") + " from (" + fromX + ", " + fromY + ") to (" + Math.floor(position/8) + ", " + position%8 + "), tp: " + piece);
                 setCurrentBoard(tempBoard);
 
-                const colour = tempBoard[position] > 0 ? 1 : -1;
                 const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
-                if(isKingCheckmated(kingPosition, colour, lastMove.current, currentBoard)){
-                    onGameEnd(colour);
+                const inCheck = isInCheck(kingPosition, tempBoard);
+                const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, lastMove.current, tempBoard);
+                
+                if(possibleMoves.length === 0){
+                    onGameEnd(inCheck ? colour : 0); //declare a winner after a checkmate or a stalemate
+                } else if(isDraw(material.current, moveHistory.current, tempBoard)) {
+                    onGameEnd(0);
                 } else {
                     //addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    //colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing
+                    colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
                     if(gameMode.startsWith("computer") && compMove === -1) {
-                        makeComputerMove(-color, fromPos, position);
+                        makeComputerMove(-colour, fromPos, position);
                     }
                 }
             }
@@ -206,7 +234,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 setTimeout(() => {
                     setChosenSquare(fromPos);
                     setPotentialMoves([[Math.floor(toPos/8)-Math.floor(fromPos/8), toPos%8-fromPos%8]]);
-                    console.log("az", toPos, fromPos, colour);
                     makeMove(toPos, fromPos, colour);
                 }, 100);
                 colourToMove.current = -colour;
@@ -216,30 +243,11 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             });
     }
 
-    /*const convertBoard2String = () => {
-        return currentBoard.map(element => element.join(''));
-    }*/
-
     const isCellPartOfLastMove = (pos: number) => {
         return (pos === lastMove.current[0] || pos === lastMove.current[1]);
     }
 
-    const addToBoardHistory = (board: number[][], colour: number) => {
-        if(colour > 0) {
-            const tmpBoard = copy3DArray(whiteMoveHistory); //not working because useState is not updated before black makes move
-            tmpBoard.push(board);
-            setWhiteMoveHistory(tmpBoard);
-            setWhiteMoveHistoryIndex(whiteMoveHistoryIndex+1)
-        } else {
-            const tmpBoard = copy3DArray(blackMoveHistory); //not working because useState is not updated before black makes move
-            tmpBoard.push(board);
-            setBlackMoveHistory(tmpBoard);
-            setBlackMoveHistoryIndex(blackMoveHistoryIndex+1);
-        }
-        
-    }
-
-    const onPrevMoveClicked = () => {
+    /*const onPrevMoveClicked = () => {
         if(whiteMoveHistoryIndex-1 >= 0 && whiteMoveHistoryIndex > blackMoveHistoryIndex) {
             console.log("prev: " + whiteMoveHistoryIndex + ", " + whiteMoveHistory.length)
             setWhiteMoveHistoryIndex(whiteMoveHistoryIndex-1);
@@ -252,7 +260,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
 
     const onNextMoveClicked = () => {
         console.log("next")
-    }
+    }*/
 
     useEffect(() => {
         if(gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
@@ -328,8 +336,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             <div className="under-board">
                 <div className="timer">Time</div>
                 <div className="move-buttons-container">
-                    <div className="prev-move-button" onClick={onPrevMoveClicked}>Prev</div>
-                    <div className="next-move-button" onClick={onNextMoveClicked}>Next</div>
+                    <div className="prev-move-button">Prev</div>
+                    <div className="next-move-button">Next</div>
                 </div>
             </div>
         </>

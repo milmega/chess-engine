@@ -13,17 +13,23 @@ interface BoardRef {
 
 function App() {
   const boardRef = useRef<BoardRef | null>(null);
-  const [winner, setWinner] = useState("");
+  const [gameResult, setGameResult] = useState("");
   const [gameMode, setGameMode] = useState("menu");
-  const [playerColour, setPlayerColour] = useState(0); //TODO: let user to choose side. default 1 = white
+  const [playerColour, setPlayerColour] = useState(0);
   const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
   const declareWinner = (colour: number) => {
-    setWinner(colour > 0 ? "WHITE" : "BLACK");
+    if(colour > 0) {
+      setGameResult("WHITE WINS!")
+    } else if(colour < 0) {
+      setGameResult("BLACK WINS!")
+    } else {
+      setGameResult("DRAW!");
+    }
     setGameMode("menu");
   }
 
   const resetGame = () => {
-    setWinner("");
+    setGameResult("");
     setGameMode("menu");
     setPlayerColour(0);
     if (boardRef.current) {
@@ -56,7 +62,7 @@ function App() {
     <div className="app">
       <div>
         <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} playerColour={playerColour}/>
-        {winner && <div className="banner"><span className="banner-text">{winner} WINS!</span></div>}
+        {gameResult && <div className="banner"><span className="banner-text">{gameResult}</span></div>}
         {playerColour === 0 && gameMode !== "menu" && 
           <div className="banner">
             <div className="banner-king" onClick={() => setPlayerColour(1)}><Square piece={Piece.KING} scale="5"/></div>
