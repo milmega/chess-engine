@@ -216,7 +216,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     onGameEnd(0);
                 } else {
                     //addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
+                    //colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
                     if(gameMode.startsWith("computer") && compMove === -1) {
                         makeComputerMove(-colour, fromPos, position);
                     }
@@ -258,6 +258,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
 
     const onPrevMoveClicked = (fastBackward: boolean) => {
+        setPotentialAttacks([]);
+        setPotentialMoves([]);
+        setChosenSquare(-1);
         if(fastBackward) {
             historyIndex.current = 0;
             setCurrentBoard([
