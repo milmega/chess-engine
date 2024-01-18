@@ -21,33 +21,6 @@
     rotate: 180deg;
 }
 
-.under-board {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-left: 40px;
-    margin-right: 40px;
-}
-
-.move-buttons-container {
-    display: flex;
-    flex-direction: row;
-}
-
-.prev-move-button {
-    background-color: red;
-    align-self: flex-end;
-}
-
-.next-move-button {
-    background-color: green;
-}
-
-.timer {
-    background-color: yellow;
-}
-
 .banner {
     width: 800px;
     height: 250px;

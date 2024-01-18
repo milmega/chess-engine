@@ -237,7 +237,6 @@ const drawBy3foldRepetition = (moveHistory: Move[]) => { //simplified version of
         return false;
     }
     const last8Moves = moveHistory.slice(-8);
-    console.log(last8Moves);
     if(last8Moves[0].start === last8Moves[4].start && last8Moves[0].target === last8Moves[4].target &&
         last8Moves[1].start === last8Moves[5].start && last8Moves[1].target === last8Moves[5].target &&
         last8Moves[2].start === last8Moves[6].start && last8Moves[2].target === last8Moves[6].target &&

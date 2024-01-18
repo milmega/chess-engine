@@ -8,7 +8,9 @@ import MoveGeneratorService from './services/MoveGeneratorService';
 import Square from './components/Square';
 
 interface BoardRef {
-  reset: () => void;  
+  reset: () => void;
+  onPrevMoveClicked: (fastBackward: boolean) => void;
+  onNextMoveClicked: (fastForward: boolean) => void;
 }
 
 function App() {
@@ -17,6 +19,7 @@ function App() {
   const [gameMode, setGameMode] = useState("menu");
   const [playerColour, setPlayerColour] = useState(0);
   const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
+
   const declareWinner = (colour: number) => {
     if(colour > 0) {
       setGameResult("WHITE WINS!")
@@ -57,6 +60,14 @@ function App() {
   const onEduSectionExit = () => {
     setGameMode("menu");
   }
+
+  const onPrevMoveClicked = (fastBackward: boolean) => {
+    boardRef.current!.onPrevMoveClicked(fastBackward);
+  }
+
+  const onNextMoveClicked = (fastForward: boolean) => {
+    boardRef.current!.onNextMoveClicked(fastForward);
+  }
   
   return (
     <div className="app">
@@ -69,7 +80,7 @@ function App() {
             <div className="banner-king" onClick={() => setPlayerColour(-1)}><Square piece={-Piece.KING} scale="5"/></div>
           </div>}
       </div>
-      <SideBar onGameReset={resetGame} onPlayOnline={playOnline} onPlayComputer={playComputer} onLearnMore={learnMore}/>
+      <SideBar onGameReset={resetGame} onPlayOnline={playOnline} onPlayComputer={playComputer} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
       {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
     </div>
   );

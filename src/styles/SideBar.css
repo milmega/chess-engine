@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     height: 800px;
+    margin-top: 40px;
 }
 
 .pre-game-sidebar {
@@ -113,4 +114,40 @@
 .learn-more-subtitle {
     font-size: 15px;
     font-weight: 500;
+}
+
+.prev-next-btn-container {
+    display: flex;
+    margin-top: 20px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prev-move-button {
+    transform: rotate(180deg);
+}
+
+.move-button {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    background-color: #eeeed2;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #769656;
+    border-radius: 10px;
+}
+
+.move-button:hover {
+    background-color: #9dcb5d;
+}
+
+.move-button-icon {
+    font-size: 30px;
+    color: #769656;
+    font-weight: 800;
+}
+
+.with-margin {
+    margin-left: 5px;
 }

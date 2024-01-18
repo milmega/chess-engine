@@ -8,7 +8,8 @@ export class Move {
     public capture: number;
     public promotionFlag: boolean
     public castlingFlag: boolean;
-    public castlingPosition: number;
+    public preCastlingPosition: number;
+    public postCastlingPosition: number
     public enpassantFlag: boolean;
     public enpassantPosition: number;
 
@@ -22,7 +23,8 @@ export class Move {
         this.capture = capture;
         this.promotionFlag = false;
         this.castlingFlag = false;
-        this.castlingPosition = -1;
+        this.preCastlingPosition = -1;
+        this.postCastlingPosition = -1;
         this.enpassantFlag = false;
         this.enpassantPosition = -1;
     }

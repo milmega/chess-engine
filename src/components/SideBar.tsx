@@ -1,14 +1,17 @@
 import { useState } from "react";
+import { SlArrowLeft, SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
 import "../styles/SideBar.css"
 
 interface Props {
     onGameReset: () => void,
     onPlayOnline: () => void,
     onPlayComputer: () => void,
-    onLearnMore: () => void
+    onLearnMore: () => void,
+    onPrevMove: (fastBackward: boolean) => void,
+    onNextMove: (fastForward: boolean) => void
 }
 
-const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, onLearnMore}) => {
+const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, onLearnMore, onPrevMove, onNextMove}) => {
 
     const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
 
@@ -30,6 +33,14 @@ const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, on
     const onLearnMoreClicked = () => {
         setGameMode("menu-edu");
         onLearnMore();
+    }
+
+    const onPrevMoveBtnClicked = (fastBackward: boolean) => {
+        onPrevMove(fastBackward);
+    }
+
+    const onNextMoveBtnClicked = (fastForward: boolean) => {
+        onNextMove(fastForward);
     }
 
     return (
@@ -55,6 +66,20 @@ const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, on
             { !gameMode.startsWith("menu") && <div className="game-sidebar">
                 <div className="leave-game-button" onClick={onLeaveGameClicked}>
                     <span>Leave the game</span>
+                </div>
+                <div className="prev-next-btn-container">
+                    <div className="move-button" onClick={() => onPrevMoveBtnClicked(true)}>
+                        <SlControlStart className="move-button-icon"/>
+                    </div>
+                    <div className="move-button prev-move-button" onClick={() => onPrevMoveBtnClicked(false)}>
+                        <SlControlPlay className="move-button-icon with-margin"/>
+                    </div>
+                    <div className="move-button" onClick={() => onNextMoveBtnClicked(false)}>
+                        <SlControlPlay className="move-button-icon with-margin"/>
+                    </div>
+                    <div className="move-button" onClick={() => onNextMoveBtnClicked(true)}>
+                        <SlControlEnd className="move-button-icon"/>
+                    </div>
                 </div>
             </div> }
         </div>
