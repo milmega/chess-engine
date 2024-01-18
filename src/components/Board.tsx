@@ -31,9 +31,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         1, 1, 1, 1, 1, 1, 1, 1,
         4, 2, 3, 5, 6, 3, 2, 4]);
     const lastMove = useRef<number[]>([]);
-    const colourToMove = useRef(1); //TODO: colourToMove and colour are duplicates?
+    const colourToMove = useRef(1);
     const material = useRef<number[][]>([[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]]); //white material, blackMaterial
-    const moveHistory = useRef<Move[]>([]); //TODO: add moveHistory
+    const moveHistory = useRef<Move[]>([]);
     const historyIndex = useRef(0);
 
      /*
@@ -74,13 +74,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         moveGeneratorService.resetBoard();
     }
 
-    const makeMove = (position: number, compMove: number = -1, colour: number = colourToMove.current) => { //starting square is taken from state unless computer makes move
+    const makeMove = (position: number, compMove: number = -1) => { //starting square is taken from state unless computer makes move
         const fromX = compMove > -1 ? Math.floor(compMove / 8) : Math.floor(chosenSquare / 8);
         const fromY = compMove > -1 ? compMove % 8 : chosenSquare % 8;
         const fromPos = compMove > -1 ? compMove : chosenSquare;
         const cordinateX = Math.floor(position / 8);
         const cordinateY = position % 8;
         const piece = currentBoard[position];
+        const colour = colourToMove.current;
 
         if(gameMode.startsWith("menu")) {
             return;
@@ -91,7 +92,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         if(playerColour === 0) { // if the player has not chosen a colour return
             return;
         }
-        if(historyIndex.current+1 < moveHistory.current.length) { //TODO: implement move history
+        if(historyIndex.current+1 < moveHistory.current.length) {
             //TODO: show prompt
             return;
         }
@@ -216,9 +217,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     onGameEnd(0);
                 } else {
                     //addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    //colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
+                    colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
                     if(gameMode.startsWith("computer") && compMove === -1) {
-                        makeComputerMove(-colour, fromPos, position);
+                        colourToMove.current = -colourToMove.current;
+                        makeComputerMove(fromPos, position);
                     }
                 }
             }
@@ -229,10 +231,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
     
     // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
-    const makeComputerMove = (colour: number, start: number, destination: number) => {
-        colourToMove.current = colour;
+    const makeComputerMove = (start: number, destination: number) => {
         moveGeneratorService
-            .getMoveData(start, destination, colour)
+            .getMoveData(start, destination, colourToMove.current)
             .then(moveData => {
                 const cors: string[] = moveData.toString().split(',');
                 const fromPos = parseInt(cors[0]);
@@ -240,9 +241,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 setTimeout(() => {
                     setChosenSquare(fromPos);
                     setPotentialMoves([[Math.floor(toPos/8)-Math.floor(fromPos/8), toPos%8-fromPos%8]]);
-                    makeMove(toPos, fromPos, colour);
+                    makeMove(toPos, fromPos);
                 }, 100);
-                colourToMove.current = -colour;
+                colourToMove.current = -colourToMove.current;
             })
             .catch(error => {
                 console.error('There was an error:', error.message);
@@ -330,7 +331,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
 
     useEffect(() => {
         if(gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
-            makeComputerMove(1, -1, -1);
+            makeComputerMove(-1, -1);
         }
     }, [playerColour]);
 
