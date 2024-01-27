@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SlArrowLeft, SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
+import { SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
 import "../styles/SideBar.css"
 
 interface Props {

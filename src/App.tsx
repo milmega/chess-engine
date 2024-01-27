@@ -16,17 +16,19 @@ interface BoardRef {
 function App() {
   const boardRef = useRef<BoardRef | null>(null);
   const [gameResult, setGameResult] = useState("");
+  const [gameResultDetails, setGameResultDetails] = useState("");
   const [gameMode, setGameMode] = useState("menu");
   const [playerColour, setPlayerColour] = useState(0);
   const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
 
-  const declareWinner = (colour: number) => {
+  const declareWinner = (colour: number, drawReason: string) => {
     if(colour > 0) {
       setGameResult("WHITE WINS!")
     } else if(colour < 0) {
       setGameResult("BLACK WINS!")
     } else {
       setGameResult("DRAW!");
+      setGameResultDetails(drawReason);
     }
     setGameMode("menu");
   }
@@ -73,7 +75,10 @@ function App() {
     <div className="app">
       <div>
         <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} playerColour={playerColour}/>
-        {gameResult && <div className="banner"><span className="banner-text">{gameResult}</span></div>}
+        {gameResult && <div className="banner">
+          <span className="banner-text">{gameResult}</span>
+          <span className="banner-subtext">{gameResultDetails}</span>
+          </div>}
         {playerColour === 0 && gameMode !== "menu" && 
           <div className="banner">
             <div className="banner-king" onClick={() => setPlayerColour(1)}><Square piece={Piece.KING} scale="5"/></div>

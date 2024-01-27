@@ -8,7 +8,7 @@ import { Piece } from "./Piece";
 import { Move } from "./Move";
 
 interface Props {
-    onGameEnd: (colour: number) => void,
+    onGameEnd: (colour: number, drawDetails: string) => void,
     gameMode: string,
     playerColour: number
 }
@@ -110,7 +110,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         } else {
             const pontentialMovesArray = compMove > -1 ? [[cordinateX-fromX, cordinateY-fromY]] : potentialMoves;
             if(pontentialMovesArray.some(m => fromX + m[0] === cordinateX && fromY + m[1] === cordinateY)) {
-                let tempBoard = currentBoard; //TODO; why am I using current board if I amde a tempBoard? Fixed it but is it ok?
+                let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
                 const move: Move = new Move(tempBoard[fromPos], fromPos, position, colour, tempBoard[position]);
 
                 // WHITE CASTLING
@@ -211,13 +211,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 const inCheck = isInCheck(kingPosition, tempBoard);
                 const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, lastMove.current, tempBoard);
                 
+                const drawReason = isDraw(material.current, moveHistory.current, tempBoard);
                 if(possibleMoves.length === 0){
-                    onGameEnd(inCheck ? colour : 0); //declare a winner after a checkmate or a stalemate
-                } else if(isDraw(material.current, moveHistory.current, tempBoard)) {
-                    onGameEnd(0);
+                    onGameEnd(inCheck ? colour : 0, ""); //declare a winner after a checkmate or a stalemate
+                } else if(drawReason.length > 0) {
+                    onGameEnd(0, drawReason); //declare a draw and provide a reason
                 } else {
                     //addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
+                    //colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
                     if(gameMode.startsWith("computer") && compMove === -1) {
                         colourToMove.current = -colourToMove.current;
                         makeComputerMove(fromPos, position);

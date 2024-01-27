@@ -34,7 +34,7 @@ export const getValidMoves = (piece: number, fromPos: number, kingPosition: numb
     return newMoves;
 }
 
-export const getMoves = (piece: number, position: number, lastMove: number[] = [], board: number[]) => { // TODO: add cache for moves in the same ply
+const getMoves = (piece: number, position: number, lastMove: number[] = [], board: number[]) => { // TODO: add cache for moves in the same ply
     const movesForPiece: number[][] = getMovesForPiece(piece, position, board);
     const cordinateX = Math.floor(position / 8);
     const cordinateY = position % 8;
@@ -79,7 +79,7 @@ export const getMoves = (piece: number, position: number, lastMove: number[] = [
     return allMovesForPiece;
 }
 
-export const getMovesForPiece = (piece: number, position: number, board: number[]) => {
+const getMovesForPiece = (piece: number, position: number, board: number[]) => {
     const cordinateX = Math.floor(position/8);
     const cordinateY = position%8;
     if(Math.abs(piece) === Piece.PAWN) {
@@ -161,7 +161,7 @@ const getCastlingMoves = (colour: number, castling: boolean[], board: number[]) 
             continue;
         }
         const moves = getMoves(board[i], i, [], board);
-        leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5); //wtf did I do here? 
+        leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5); //checking if any square on the casling way is under attack
         rightCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 > 3);
     }
     if(!castling[1] && leftCastlingEnabled && board[row*8+1] === 0 && board[row*8+2] === 0 && board[row*8+3] === 0) { //if left rook hasn't moved
@@ -190,8 +190,11 @@ export const isInCheck = (kingPosition: number, board: number[]) => {
     return false;
 }
 
-export const isDraw = (material: number[][], moveHistory: Move[], board: number[]) => {     
-    return drawByInsufficientMaterial(material, board) || drawBy50MoveRule(moveHistory) || drawBy3foldRepetition(moveHistory);
+export const isDraw = (material: number[][], moveHistory: Move[], board: number[]) => {
+    if(drawByInsufficientMaterial(material, board)) { return "By insufficient material"; }
+    if (drawBy50MoveRule(moveHistory)) { return "By 50 move rule"; }
+    if(drawBy3foldRepetition(moveHistory)){ return "By threefold repetition"; }
+    return "";
 }
 
 const drawByInsufficientMaterial = (material: number[][], board: number[]) => {
