@@ -161,8 +161,8 @@ const getCastlingMoves = (colour: number, castling: boolean[], board: number[]) 
             continue;
         }
         const moves = getMoves(board[i], i, [], board);
-        leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5); //checking if any square on the casling way is under attack
-        rightCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 > 3);
+        leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5 && move[1] + i%8 > 1); //checking if any square on the casling way is under attack
+        rightCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 > 3 && move[1] + i%8 < 7);
     }
     if(!castling[1] && leftCastlingEnabled && board[row*8+1] === 0 && board[row*8+2] === 0 && board[row*8+3] === 0) { //if left rook hasn't moved
         castlingMoves.push([0, -2]);

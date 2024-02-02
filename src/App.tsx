@@ -75,7 +75,7 @@ function App() {
     <div className="app">
       <div>
         <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} playerColour={playerColour}/>
-        {gameResult && <div className="banner">
+        {gameResult && <div className="banner vertical-banner">
           <span className="banner-text">{gameResult}</span>
           <span className="banner-subtext">{gameResultDetails}</span>
           </div>}
