@@ -136,6 +136,7 @@
     justify-content: center;
     border: 3px solid #769656;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 .move-button:hover {

@@ -231,7 +231,7 @@ const drawBy50MoveRule = (moveHistory: Move[]) => {
     if(moveHistory.length < 100) {
         return false;
     }
-    return moveHistory.reverse().find(move => move.capture !== 0)!.id >= moveHistory.length-100;
+    return moveHistory.reverse().find(move => move.targetPiece !== 0)!.id >= moveHistory.length-100;
 }
 
 const drawBy3foldRepetition = (moveHistory: Move[]) => { //simplified version of 3foldRepetition
@@ -240,10 +240,10 @@ const drawBy3foldRepetition = (moveHistory: Move[]) => { //simplified version of
         return false;
     }
     const last8Moves = moveHistory.slice(-8);
-    if(last8Moves[0].start === last8Moves[4].start && last8Moves[0].target === last8Moves[4].target &&
-        last8Moves[1].start === last8Moves[5].start && last8Moves[1].target === last8Moves[5].target &&
-        last8Moves[2].start === last8Moves[6].start && last8Moves[2].target === last8Moves[6].target &&
-        last8Moves[3].start === last8Moves[7].start && last8Moves[3].target === last8Moves[7].target) {
+    if(last8Moves[0].startSquare === last8Moves[4].startSquare && last8Moves[0].targetSquare === last8Moves[4].targetSquare &&
+        last8Moves[1].startSquare === last8Moves[5].startSquare && last8Moves[1].targetSquare === last8Moves[5].targetSquare &&
+        last8Moves[2].startSquare === last8Moves[6].startSquare && last8Moves[2].targetSquare === last8Moves[6].targetSquare &&
+        last8Moves[3].startSquare === last8Moves[7].startSquare && last8Moves[3].targetSquare === last8Moves[7].targetSquare) {
         return true;
     }
     return false;
