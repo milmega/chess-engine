@@ -15,8 +15,8 @@ interface Props {
 
 const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref) => {
     const [chosenSquare, setChosenSquare] = useState(-1);
-    const [potentialMoves, setPotentialMoves] = useState<number[][]>([]);
-    const [potentialAttacks, setPotentialAttacks] = useState<number[]>([]);
+    const [potentialMoves, setPotentialMoves] = useState<Move[]>([]);
+    const [potentialAttacks, setPotentialAttacks] = useState<Move[]>([]);
     const [whiteKingPosition, setWhiteKingPosition] = useState(60);
     const [blackKingPosition, setBlackKingPosition] = useState(4);
     const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
@@ -30,11 +30,11 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         0, 0, 0, 0, 0, 0, 0, 0,
         1, 1, 1, 1, 1, 1, 1, 1,
         4, 2, 3, 5, 6, 3, 2, 4]);
-    const lastMove = useRef<number[]>([]);
     const colourToMove = useRef(1);
     const material = useRef<number[][]>([[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]]); //white material, blackMaterial
     const moveHistory = useRef<Move[]>([]);
     const historyIndex = useRef(0);
+    const allMoves = useRef<Move[]>([]);
 
      /*
         -4, -2, -3, -5, -6, -3, -2, -4,
@@ -66,27 +66,23 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 1, 1, 1, 1,
             4, 2, 3, 5, 6, 3, 2, 4]);
+        allMoves.current = [];
         colourToMove.current = 1;
-        lastMove.current = [];
         material.current = [[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]];
         moveHistory.current = [];
         historyIndex.current = 0;
         moveGeneratorService.resetBoard();
     }
 
-    const makeMove = (position: number, compMove: number = -1) => { //starting square is taken from state unless computer makes move
-        const fromX = compMove > -1 ? Math.floor(compMove / 8) : Math.floor(chosenSquare / 8);
-        const fromY = compMove > -1 ? compMove % 8 : chosenSquare % 8;
-        const fromPos = compMove > -1 ? compMove : chosenSquare;
-        const cordinateX = Math.floor(position / 8);
-        const cordinateY = position % 8;
+    const makeMove = (position: number, compMove: Move | null = null) => { //starting square is taken from state unless computer makes move
+        const fromPos = compMove ? compMove.startSquare : chosenSquare;
         const piece = currentBoard[position];
         const colour = colourToMove.current;
-
+        
         if(gameMode.startsWith("menu")) {
             return;
         }
-        if(gameMode.startsWith("computer") && compMove === -1 && colour === -playerColour) {
+        if(gameMode.startsWith("computer") && !compMove && colour === -playerColour) {
             return;
         }
         if(playerColour === 0) { // if the player has not chosen a colour return
@@ -96,120 +92,79 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             //TODO: show prompt
             return;
         }
+
+        if(allMoves.current.length === 0 && compMove === null) {
+            moveGeneratorService
+            .getAllMoves(colourToMove.current)
+            .then(data => {
+                allMoves.current.push(...data);
+                makeMove(position, compMove);
+            });
+            return;
+        }
+
         if(fromPos === -1 || isSameColour(currentBoard[position], currentBoard[fromPos])) {
             if(piece === 0 || !isSameColour(piece, colour)){ // ignore if clicked on empty square or on opponent's piece
                 return;
             }
-            const kingPosition = colour > 0 ? whiteKingPosition : blackKingPosition;
-            const castling = colour > 0 ? whiteCastling : blackCastling;
-            const validMoves = getValidMoves(piece, position, kingPosition, castling, lastMove.current, currentBoard);
-            const attacks = getAttackMoves(piece, position, validMoves, currentBoard);
+            const allMovesFromPosition: Move[] = [];
+            const attacks: Move[] = [];
+            allMoves.current.filter(move => move.startSquare === position).forEach(move => {
+                if(currentBoard[move.targetSquare] !== 0) {
+                    attacks.push(move);
+                }
+                allMovesFromPosition.push(move);
+            });
+            
             setPotentialAttacks(attacks);
-            setPotentialMoves(validMoves);
+            setPotentialMoves(allMovesFromPosition);
             setChosenSquare(position);
         } else {
-            const pontentialMovesArray = compMove > -1 ? [[cordinateX-fromX, cordinateY-fromY]] : potentialMoves;
-            if(pontentialMovesArray.some(m => fromX + m[0] === cordinateX && fromY + m[1] === cordinateY)) {
+            const move = compMove ? compMove : potentialMoves.find(move => move.targetSquare === position);
+            if(move) {
                 let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
-                const move: Move = new Move(tempBoard[fromPos], fromPos, position, colour, tempBoard[position]);
-
-                // WHITE CASTLING
-                if(tempBoard[fromPos] === Piece.KING) {
-                    setWhiteKingPosition(position);
-                    setWhiteCastling([true, true, true]);
-                    move.castlingFlag = true;
-                    if(Math.abs(cordinateY - fromY) > 1) { //if king is doing castling, move rook accordingly
-                        if(cordinateY === 2) {
-                            tempBoard[56] = Piece.EMPTY;
-                            tempBoard[59] = Piece.ROOK;
-                            move.preCastlingPosition = 56;
-                            move.postCastlingPosition = 59;
-                        } else {
-                            tempBoard[63] = Piece.EMPTY;
-                            tempBoard[61] = Piece.ROOK;
-                            move.preCastlingPosition = 63;
-                            move.postCastlingPosition = 61;
-                        }
+                // CASTLING
+                if (Math.abs(move.piece) === Piece.KING) {
+                    setWhiteKingPosition(move.targetSquare);
+                    if(move.colour > 0) {
+                        setWhiteCastling([true, true, true]);
+                    } else {
+                        setBlackCastling([true, true, true]);
                     }
-                } 
-                // BLACK CASTLING
-                else if(tempBoard[fromPos] === -Piece.KING) {
-                    setBlackKingPosition(position);
-                    setBlackCastling([true, true, true]);
-                    move.castlingFlag = true;
-                    if(Math.abs(cordinateY - fromY) > 1) { //if king is doing castling, move rook accordingly
-                        if(cordinateY === 2) {
-                            tempBoard[0] = Piece.EMPTY;
-                            tempBoard[3] = -Piece.ROOK;
-                            move.preCastlingPosition = 0;
-                            move.postCastlingPosition = 3;
-                        } else {
-                            tempBoard[7] = Piece.EMPTY;
-                            tempBoard[5] = -Piece.ROOK;
-                            move.preCastlingPosition = 7;
-                            move.postCastlingPosition = 5;
-                        }
-                    }
-                }
-                //if you move a rook then disable castling
-                if(Math.abs(tempBoard[fromPos]) === Piece.ROOK) {
-                    if(tempBoard[fromPos] > 0 && fromX === 7 && (fromY === 0 || fromY === 7)) {
-                        let tempCastling = whiteCastling;
-                        tempCastling[fromY === 0 ? 1 : 2] = true;
-                        setWhiteCastling(tempCastling);
-                    } else if(tempBoard[fromPos] < 0 && fromX === 0 && (fromY === 0 || fromY === 7)) {
-                        let tempCastling = blackCastling;
-                        tempCastling[fromY === 0 ? 1 : 2] = true;
-                        setBlackCastling(tempCastling);
-                    }
-                }
-                //if a rook is captured then disable castling
-                if(Math.abs(tempBoard[position]) === Piece.ROOK) {
-                    if(tempBoard[position] > 0 && cordinateX === 7 && (cordinateY === 0 || cordinateY === 7)) {
-                        let tempCastling = whiteCastling;
-                        tempCastling[cordinateY === 0 ? 1 : 2] = true;
-                        setWhiteCastling(tempCastling);
-                    } else if(tempBoard[position] < 0 && cordinateX === 0 && (cordinateY === 0 || cordinateY === 7)){
-                        let tempCastling = blackCastling;
-                        tempCastling[cordinateY === 0 ? 1 : 2] = true;
-                        setBlackCastling(tempCastling);
+                    if (move.castlingFlag) { //if king is doing castling, move rook accordingly
+                        tempBoard[move.preCastlingPosition] = Piece.EMPTY;
+                        tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
                     }
                 }
                 // PIECE MOVE
-                if(Math.abs(tempBoard[fromPos]) === Piece.PAWN ) {
-                   if(Math.abs(cordinateY-fromY) === 1 && tempBoard[position] === 0) { //en passant move
-                        tempBoard[fromX*8+cordinateY] = 0;
-                        move.enpassantFlag = true;
-                        move.enpassantPosition = fromX*8+cordinateY;
-                        material.current[colour > 0 ? 1 : 0][Piece.PAWN]--;
-                    }  
-                    if(cordinateX === 0 || cordinateX === 7) { // getting a pawn to the last row
-                        tempBoard[position] = Piece.QUEEN * colour;
-                        move.promotionFlag = true;
-                        material.current[colour > 0 ? 0 : 1][Piece.QUEEN]++;
-                        material.current[colour > 0 ? 0 : 1][Piece.PAWN]--;
-                    } else {
-                        tempBoard[position] = tempBoard[fromPos];
-                        if(piece !== 0) {
-                            material.current[piece > 0 ? 0 : 1][Math.abs(piece)]--;
-                        }
-                    } 
-                } else {
-                    tempBoard[position] = tempBoard[fromPos];
-                    if(piece !== 0) {
-                        material.current[piece > 0 ? 0 : 1][Math.abs(piece)]--;
-                    }
+                if(move.enpassantFlag) {
+                    tempBoard[move.enpassantPosition] = Piece.EMPTY;
+                    material.current[move.colour > 0 ? 1 : 0][Piece.PAWN]--;
                 }
-                tempBoard[fromPos] = 0;
+                if(move.promotionFlag) {
+                    tempBoard[move.targetSquare] = Piece.QUEEN*move.colour;
+                    material.current[move.colour > 0 ? 0 : 1][Piece.QUEEN]++;
+                    material.current[move.colour > 0 ? 0 : 1][Piece.PAWN]--;
+                } else {
+                    tempBoard[move.targetSquare] = tempBoard[fromPos];
+                }
+                if(move.targetPiece !== Piece.EMPTY) {
+                    material.current[move.targetPiece > 0 ? 0 : 1][Math.abs(move.targetPiece)]--;
+                }
+                tempBoard[move.startSquare] = Piece.EMPTY;
+
+                // update backend
+                moveGeneratorService.makeMove(move); //TODO: get response from backend if its a checkmate or draw
                 moveHistory.current.push(move);
-                historyIndex.current++; 
-                lastMove.current = [fromPos, position];
-                console.log((colour > 0 ? "White" : "Black") + " from (" + fromX + ", " + fromY + ") to (" + Math.floor(position/8) + ", " + position%8 + "), tp: " + piece);
+                historyIndex.current++;
+                allMoves.current = [];
+                
+                console.log((colour > 0 ? "White" : "Black") + " from (" + move.fromX + ", " + move.fromY + ") to (" + move.toX + ", " + move.toY + "), tp: " + move.targetPiece);
                 setCurrentBoard(tempBoard);
 
                 const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
                 const inCheck = isInCheck(kingPosition, tempBoard);
-                const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, lastMove.current, tempBoard);
+                const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, moveHistory.current[historyIndex.current-1], tempBoard);
                 
                 const drawReason = isDraw(material.current, moveHistory.current, tempBoard);
                 if(possibleMoves.length === 0){
@@ -217,11 +172,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 } else if(drawReason.length > 0) {
                     onGameEnd(0, drawReason); //declare a draw and provide a reason
                 } else {
-                    //addToBoardHistory(copy2DArray(tempBoard), piece > 0 ? 1 : -1)
-                    //colourToMove.current = -colourToMove.current //delete it for single player /  add it for testing !!!
-                    if(gameMode.startsWith("computer") && compMove === -1) {
-                        colourToMove.current = -colourToMove.current;
-                        makeComputerMove(fromPos, position);
+                    colourToMove.current = -colourToMove.current
+                    if(gameMode.startsWith("computer") && !compMove) {
+                        makeComputerMove();
                     }
                 }
             }
@@ -232,17 +185,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
     
     // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
-    const makeComputerMove = (start: number, destination: number) => {
+    const makeComputerMove = () => {
         moveGeneratorService
-            .getMoveData(start, destination, colourToMove.current)
-            .then(moveData => {
-                const cors: string[] = moveData.toString().split(',');
-                const fromPos = parseInt(cors[0]);
-                const toPos = parseInt(cors[1]);        
+            .getBestMove(colourToMove.current)
+            .then(move => {       
                 setTimeout(() => {
-                    setChosenSquare(fromPos);
-                    setPotentialMoves([[Math.floor(toPos/8)-Math.floor(fromPos/8), toPos%8-fromPos%8]]);
-                    makeMove(toPos, fromPos);
+                    setChosenSquare(move.startSquare);
+                    setPotentialMoves([move]);
+                    makeMove(move.targetSquare, move);
                 }, 100);
                 colourToMove.current = -colourToMove.current;
             })
@@ -256,7 +206,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             return false;
         }
         const move = moveHistory.current[historyIndex.current-1];
-        return (pos === move.start || pos === move.target);
+        return (pos === move.startSquare || pos === move.targetSquare);
     }
 
     const onPrevMoveClicked = (fastBackward: boolean) => {
@@ -280,17 +230,17 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             historyIndex.current--;
             const prevMove = moveHistory.current[historyIndex.current];
             const tempBoard = [...currentBoard]; //TODO: make sure it's copied like here in other places as well
-            tempBoard[prevMove.start] = tempBoard[prevMove.target];
-            tempBoard[prevMove.target] = prevMove.capture;
+            tempBoard[prevMove.startSquare] = tempBoard[prevMove.targetSquare];
+            tempBoard[prevMove.targetSquare] = prevMove.targetPiece;
             if(prevMove.castlingFlag) {
-                tempBoard[prevMove.preCastlingPosition] = Piece.ROOK*prevMove.colour;
+                tempBoard[prevMove.preCastlingPosition] = prevMove.colour*Piece.ROOK;
                 tempBoard[prevMove.postCastlingPosition] = 0;
             }
             if(prevMove.enpassantFlag) {
-                tempBoard[prevMove.enpassantPosition] = Piece.PAWN*-prevMove.colour;
+                tempBoard[prevMove.enpassantPosition] = -prevMove.colour*Piece.PAWN;
             }
             if(prevMove.promotionFlag) {
-                tempBoard[prevMove.start] = Piece.PAWN*prevMove.colour;
+                tempBoard[prevMove.startSquare] = prevMove.colour*Piece.PAWN;
             }
             setCurrentBoard(tempBoard);
         }
@@ -315,8 +265,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
 
     const updateBoardAfterMove = (move: Move, board: number[]) => {
-        board[move.target] = board[move.start];
-        board[move.start] = 0;
+        board[move.targetSquare] = board[move.startSquare];
+        board[move.startSquare] = 0;
         if(move.castlingFlag) {
             board[move.preCastlingPosition] = 0;
             board[move.postCastlingPosition] = Piece.ROOK*move.colour;
@@ -325,14 +275,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             board[move.enpassantPosition] = 0;
         }
         if(move.promotionFlag) {
-            board[move.target] = Piece.QUEEN*move.colour;
+            board[move.targetSquare] = Piece.QUEEN*move.colour;
         }
         return board;
     }
 
     useEffect(() => {
         if(gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
-            makeComputerMove(-1, -1);
+            makeComputerMove();
         }
     }, [playerColour]);
 
@@ -349,8 +299,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 currentBoard.map((element, index) => {
                     const row = Math.floor(index / 8);
                     const column = index % 8;
-                    const chosenX = Math.floor(chosenSquare / 8);
-                    const chosenY = chosenSquare % 8;
                     if((row % 2 === 0 && column % 2 === 1) || (row % 2 === 1 && column % 2 === 0)) {
                         return(
                             <div
@@ -358,10 +306,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                                 onClick={() => makeMove(index)}
                                 className={`square
                                     ${playerColour === -1 ? "rotated-square" : ""}
-                                    ${row === chosenX && column === chosenY
+                                    ${index === chosenSquare
                                         ? "chosen-square" 
                                         : isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
-                                {element !== 0 && potentialAttacks.some(attack => attack === index) && 
+                                {element !== 0 && potentialAttacks.some(attack => attack.targetSquare === index) && 
                                     <div className={`outer-circle 
                                         ${isCellPartOfLastMove(index) ? "last-move-dark-circle" : " dark-gray-circle"}`}>
                                         <div className={`inner-circle
@@ -370,8 +318,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                                         </div>
                                     </div>
                                 }
-                                {element !== 0 && !potentialAttacks.some(attack => attack === index) && <Square piece={element}/>}
-                                {element === 0 && potentialMoves.some(m => chosenX + m[0] === row && chosenY + m[1] === column) &&
+                                {element !== 0 && !potentialAttacks.some(attack => attack.targetSquare === index) && <Square piece={element}/>}
+                                {element === 0 && potentialMoves.some(move => move.targetSquare === index) &&
                                     <div className={`${isCellPartOfLastMove(index) ? "last-move-dark-dot" : "dark-gray-dot"}`}></div>
                                 }
                             </div>
@@ -383,10 +331,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                             onClick={() => makeMove(index)}
                             className={`square
                                 ${playerColour === -1 ? "rotated-square" : ""}
-                                ${row === chosenX && column === chosenY
+                                ${index === chosenSquare
                                     ? "chosen-square"
                                     : isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
-                            {element !== 0 && potentialAttacks.some(attack => attack === index) && 
+                            {element !== 0 && potentialAttacks.some(attack => attack.targetSquare === index) && 
                                 <div className={`outer-circle
                                     ${isCellPartOfLastMove(index) ? "last-move-light-circle" : "light-gray-circle"}`}>
                                     <div className={`inner-circle
@@ -395,8 +343,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                                     </div>
                                 </div>
                             }
-                            {element !== 0 && !potentialAttacks.some(attack => attack === index) && <Square piece={element}/>}
-                            {element === 0 && potentialMoves.some(m => chosenX + m[0] === row && chosenY + m[1] === column) &&
+                            {element !== 0 && !potentialAttacks.some(attack => attack.targetSquare === index) && <Square piece={element}/>}
+                            {element === 0 && potentialMoves.some(move => move.targetSquare === index) &&
                                 <div className={`${isCellPartOfLastMove(index) ? "last-move-light-dot" : "light-gray-dot"}`}></div>
                             }
                         </div>
