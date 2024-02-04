@@ -1,7 +1,7 @@
 import { Move } from "./Move";
 import { Piece } from "./Piece";
 
-export const generateAllMoves = (colour: number, kingPosition: number, castling: boolean[], lastMove: number[], board: number[]) => {
+export const generateAllMoves = (colour: number, kingPosition: number, castling: boolean[], lastMove: Move, board: number[]) => {
     const allMoves: number[][] = [];
     for (let i = 0; i < 64; i++) {
         if(!isSameColour(board[i], colour)) {
@@ -14,7 +14,7 @@ export const generateAllMoves = (colour: number, kingPosition: number, castling:
 }
 
 //filters list of moves to prevent checking the king and enables moves that defend from checking
-export const getValidMoves = (piece: number, fromPos: number, kingPosition: number, castling: boolean[], lastMove: number[], board: number[]) => { 
+export const getValidMoves = (piece: number, fromPos: number, kingPosition: number, castling: boolean[], lastMove: Move, board: number[]) => { 
     const moves = getMoves(piece, fromPos, lastMove, board);
     const newMoves = moves.filter(move => {
         const toPosition = fromPos+move[0]*8+move[1];
@@ -34,11 +34,11 @@ export const getValidMoves = (piece: number, fromPos: number, kingPosition: numb
     return newMoves;
 }
 
-const getMoves = (piece: number, position: number, lastMove: number[] = [], board: number[]) => { // TODO: add cache for moves in the same ply
+const getMoves = (piece: number, position: number, lastMove: Move | null = null, board: number[]) => { // TODO: add cache for moves in the same ply
     const movesForPiece: number[][] = getMovesForPiece(piece, position, board);
     const cordinateX = Math.floor(position / 8);
     const cordinateY = position % 8;
-    if(lastMove.length > 0 &&  Math.abs(piece) === Piece.PAWN && Math.abs(board[lastMove[1]]) === Piece.PAWN) {
+    if(lastMove &&  Math.abs(piece) === Piece.PAWN && Math.abs(board[lastMove.targetSquare]) === Piece.PAWN) {
         const enpassant = getEnpassantMove(piece, cordinateX, cordinateY, lastMove);
         if(enpassant.length > 0) {
             movesForPiece.push(enpassant);
@@ -132,9 +132,9 @@ const getMovesForPiece = (piece: number, position: number, board: number[]) => {
 }
 
 // x and y are cordinates of the player's pawn, lastMove are cordinates from and to of the computer
-const getEnpassantMove = (piece: number, x: number, y: number, [lastMoveFrom, lastMoveTo]: number[]) => {
-    if(Math.abs(lastMoveTo - lastMoveFrom) > 8 && x === Math.floor(lastMoveTo/8) && Math.abs(y - lastMoveTo%8) === 1) {
-        return [piece > 0 ? -1 : 1, (lastMoveTo%8)-y];
+const getEnpassantMove = (piece: number, x: number, y: number, lastMove: Move) => {
+    if(Math.abs(lastMove.targetSquare - lastMove.startSquare) > 8 && x === lastMove.toX && Math.abs(y - lastMove.toY) === 1) {
+        return [piece > 0 ? -1 : 1, lastMove.toY-y];
     }
     return [];
 }
@@ -160,7 +160,7 @@ const getCastlingMoves = (colour: number, castling: boolean[], board: number[]) 
         if(board[i] === 0 || isSameColour(board[i], colour)) {
             continue;
         }
-        const moves = getMoves(board[i], i, [], board);
+        const moves = getMoves(board[i], i, null, board);
         leftCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 < 5 && move[1] + i%8 > 1); //checking if any square on the casling way is under attack
         rightCastlingEnabled = !moves.some(move => move[0] + Math.floor(i/8) === row && move[1] + i%8 > 3 && move[1] + i%8 < 7);
     }
@@ -181,7 +181,7 @@ export const isInCheck = (kingPosition: number, board: number[]) => {
         if (board[i] === 0 || isSameColour(colour, board[i])) {
             continue;
         }
-        const moves = getMoves(board[i], i, [], board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves
+        const moves = getMoves(board[i], i, null, board); //TODO: should I pass lastMove for enpassant? i dont think so because its checks for its own moves
         const attackMoves = getAttackMoves(board[i], i, moves, board);
         if(attackMoves.some(move => kingPosition === move)) {
             return true;
