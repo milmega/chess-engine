@@ -31,11 +31,11 @@ function App() {
     } else {
       setGameResult("DRAW!");
       if(result === 2) {
-        setGameResultDetails("By 50 move rule");
+        setGameResultDetails("By insufficient material");
       } else if(result === 3) {
         setGameResultDetails("By threefold repetition");
       } else if(result === 4) {
-        setGameResultDetails("By insufficient material");
+        setGameResultDetails("By 50 move rule");
       } else {
         setGameResultDetails("Stalemate");
       }

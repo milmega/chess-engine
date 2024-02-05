@@ -17,10 +17,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const [chosenSquare, setChosenSquare] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<Move[]>([]);
     const [potentialAttacks, setPotentialAttacks] = useState<Move[]>([]);
-    const [whiteKingPosition, setWhiteKingPosition] = useState(60);
-    const [blackKingPosition, setBlackKingPosition] = useState(4);
-    const [whiteCastling, setWhiteCastling] = useState([false, false, false]); //[hasKingMoved, hasLeftRookMoved, hasRightRookMoved]
-    const [blackCastling, setBlackCastling] = useState([false, false, false]);
     const [currentBoard, setCurrentBoard] = useState([
         -4, -2, -3, -5, -6, -3, -2, -4,
         -1, -1, -1, -1, -1, -1, -1, -1,
@@ -53,10 +49,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         setChosenSquare(-1);
         setPotentialMoves([]);
         setPotentialAttacks([]);
-        setWhiteKingPosition(60);
-        setBlackKingPosition(4);
-        setWhiteCastling([false, false, false]);
-        setBlackCastling([false, false, false]);
         setCurrentBoard([
             -4, -2, -3, -5, -6, -3, -2, -4,
             -1, -1, -1, -1, -1, -1, -1, -1,
@@ -124,24 +116,13 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             if(move) {
                 let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
                 // CASTLING
-                if (Math.abs(move.piece) === Piece.KING) {
-                    setWhiteKingPosition(move.targetSquare);
-                    if(move.colour > 0) {
-                        setWhiteCastling([true, true, true]);
-                    } else {
-                        setBlackCastling([true, true, true]);
-                    }
-                    if (move.castlingFlag) { //if king is doing castling, move rook accordingly
-                        tempBoard[move.preCastlingPosition] = Piece.EMPTY;
-                        tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
-                    }
-                }
-                // PIECE MOVE
-                if(move.enpassantFlag) {
+                if (move.castlingFlag) { //if king is doing castling, move rook accordingly
+                    tempBoard[move.preCastlingPosition] = Piece.EMPTY;
+                    tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
+                } else if(move.enpassantFlag) {
                     tempBoard[move.enpassantPosition] = Piece.EMPTY;
                     material.current[move.colour > 0 ? 1 : 0][Piece.PAWN]--;
-                }
-                if(move.promotionFlag) {
+                } else if(move.promotionFlag) {
                     tempBoard[move.targetSquare] = Piece.QUEEN*move.colour;
                     material.current[move.colour > 0 ? 0 : 1][Piece.QUEEN]++;
                     material.current[move.colour > 0 ? 0 : 1][Piece.PAWN]--;
