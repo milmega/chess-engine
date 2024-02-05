@@ -8,7 +8,7 @@ import { Piece } from "./Piece";
 import { Move } from "./Move";
 
 interface Props {
-    onGameEnd: (colour: number, drawDetails: string) => void,
+    onGameEnd: (colour: number, result: number) => void,
     gameMode: string,
     playerColour: number
 }
@@ -154,7 +154,17 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 tempBoard[move.startSquare] = Piece.EMPTY;
 
                 // update backend
-                moveGeneratorService.makeMove(move); //TODO: get response from backend if its a checkmate or draw
+                if(!compMove) { // comp move is handled inside a request to get bestMove
+                    moveGeneratorService
+                        .makeMove(move)
+                        .then(gameResult => {
+                            if(gameResult > 0) {
+                                onGameEnd(move.colour, gameResult);
+                                return;
+                            }
+                        });
+                }
+                
                 moveHistory.current.push(move);
                 historyIndex.current++;
                 allMoves.current = [];
@@ -162,7 +172,11 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 console.log((colour > 0 ? "White" : "Black") + " from (" + move.fromX + ", " + move.fromY + ") to (" + move.toX + ", " + move.toY + "), tp: " + move.targetPiece);
                 setCurrentBoard(tempBoard);
 
-                const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
+                colourToMove.current = -colourToMove.current
+                if(gameMode.startsWith("computer") && !compMove) {
+                    makeComputerMove();
+                }
+               /* const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
                 const inCheck = isInCheck(kingPosition, tempBoard);
                 const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, moveHistory.current[historyIndex.current-1], tempBoard);
                 
@@ -171,12 +185,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     onGameEnd(inCheck ? colour : 0, ""); //declare a winner after a checkmate or a stalemate
                 } else if(drawReason.length > 0) {
                     onGameEnd(0, drawReason); //declare a draw and provide a reason
-                } else {
-                    colourToMove.current = -colourToMove.current
-                    if(gameMode.startsWith("computer") && !compMove) {
-                        makeComputerMove();
-                    }
-                }
+                } else {*/
             }
             setPotentialAttacks([]);
             setPotentialMoves([]);
@@ -186,19 +195,23 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     
     // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
     const makeComputerMove = () => {
-        moveGeneratorService
+        setTimeout(() => {
+            moveGeneratorService
             .getBestMove(colourToMove.current)
-            .then(move => {       
-                setTimeout(() => {
+            .then(move => {
+                if(move.piece !== 0) {
                     setChosenSquare(move.startSquare);
                     setPotentialMoves([move]);
                     makeMove(move.targetSquare, move);
-                }, 100);
-                colourToMove.current = -colourToMove.current;
+                }
+                if(move.gameResult > 0) {
+                    onGameEnd(move.colour, move.gameResult);
+                }
             })
             .catch(error => {
                 console.error('There was an error:', error.message);
             });
+        }, 1000);
     }
 
     const isCellPartOfLastMove = (pos: number) => {

@@ -21,14 +21,24 @@ function App() {
   const [playerColour, setPlayerColour] = useState(0);
   const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
 
-  const declareWinner = (colour: number, drawReason: string) => {
-    if(colour > 0) {
-      setGameResult("WHITE WINS!")
-    } else if(colour < 0) {
-      setGameResult("BLACK WINS!")
+  const declareWinner = (colour: number, result: number) => {
+    if(result === 1) {
+      if(colour > 0) {
+        setGameResult("WHITE WINS!")
+      } else if(colour < 0) {
+        setGameResult("BLACK WINS!")
+      }
     } else {
       setGameResult("DRAW!");
-      setGameResultDetails(drawReason);
+      if(result === 2) {
+        setGameResultDetails("By 50 move rule");
+      } else if(result === 3) {
+        setGameResultDetails("By threefold repetition");
+      } else if(result === 4) {
+        setGameResultDetails("By insufficient material");
+      } else {
+        setGameResultDetails("Stalemate");
+      }
     }
     setGameMode("menu");
   }

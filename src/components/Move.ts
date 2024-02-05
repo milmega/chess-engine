@@ -19,6 +19,7 @@ export class Move {
     public castlingFlag: boolean;
     public preCastlingPosition: number;
     public postCastlingPosition: number;
+    public gameResult: number;
 
     constructor(piece: number, startSquare: number, targetSquare: number, targetPiece: number) {
         Move.lastId++;
@@ -41,5 +42,6 @@ export class Move {
         this.toY = targetSquare % 8;
         this.changeX = this.toX - this.fromX;
         this.changeY = this.toY = this.fromY;
+        this.gameResult = 0;
     }
 }
