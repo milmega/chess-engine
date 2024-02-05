@@ -26,14 +26,13 @@ export default class MoveGeneratorService {
     }
   }
 
-  async makeMove(move: Move) {
-    axios.post(`${this.baseUrl}/makeMove`, move)
-      .then(response => {
-        console.log('Move made successfully');
-      })
-      .catch(error => {
-        console.error('Error making the request:', error);
-      });
+  async makeMove(move: Move): Promise<number> {
+    try {
+      const response: AxiosResponse<number> = await axios.post<number>(`${this.baseUrl}/makeMove`, move);
+      return response.data;
+    } catch(error) {
+      throw new Error('Error making the request:' + error);
+    }
   }
 
   async resetBoard() {
@@ -45,5 +44,4 @@ export default class MoveGeneratorService {
         console.error('Error making the request:', error);
       });
   }
-
 }
