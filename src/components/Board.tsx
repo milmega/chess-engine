@@ -1,7 +1,6 @@
 import Square from "./Square";
 import "../styles/Board.css"
 import { useEffect, useRef, useState } from "react";
-import { generateAllMoves, getAttackMoves, getValidMoves, isInCheck, isSameColour, isDraw } from "./MoveGenerator";
 import React from "react";
 import MoveGeneratorService from "../services/MoveGeneratorService";
 import { Piece } from "./Piece";
@@ -145,7 +144,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                             }
                         });
                 }
-                
                 moveHistory.current.push(move);
                 historyIndex.current++;
                 allMoves.current = [];
@@ -157,16 +155,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 if(gameMode.startsWith("computer") && !compMove) {
                     makeComputerMove();
                 }
-               /* const kingPosition = colour > 0 ? blackKingPosition : whiteKingPosition; //if whites just made a move check black king
-                const inCheck = isInCheck(kingPosition, tempBoard);
-                const possibleMoves = generateAllMoves(-colour, kingPosition, colour > 0 ? blackCastling : whiteCastling, moveHistory.current[historyIndex.current-1], tempBoard);
-                
-                const drawReason = isDraw(material.current, moveHistory.current, tempBoard);
-                if(possibleMoves.length === 0){
-                    onGameEnd(inCheck ? colour : 0, ""); //declare a winner after a checkmate or a stalemate
-                } else if(drawReason.length > 0) {
-                    onGameEnd(0, drawReason); //declare a draw and provide a reason
-                } else {*/
             }
             setPotentialAttacks([]);
             setPotentialMoves([]);
@@ -272,6 +260,10 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             board[move.targetSquare] = Piece.QUEEN*move.colour;
         }
         return board;
+    }
+
+    const isSameColour = (piece: number, colour: number) => {
+        return (piece > 0 && colour > 0) || (piece < 0 && colour < 0)
     }
 
     useEffect(() => {
