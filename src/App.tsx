@@ -22,19 +22,19 @@ function App() {
   const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
 
   const declareWinner = (colour: number, result: number) => {
-    if(result === 1) {
-      if(colour > 0) {
+    if (result === 1) {
+      if (colour > 0) {
         setGameResult("WHITE WINS")
-      } else if(colour < 0) {
+      } else if (colour < 0) {
         setGameResult("BLACK WINS")
       }
     } else {
       setGameResult("DRAW");
-      if(result === 2) {
+      if (result === 2) {
         setGameResultDetails("By insufficient material");
-      } else if(result === 3) {
+      } else if (result === 3) {
         setGameResultDetails("By threefold repetition");
-      } else if(result === 4) {
+      } else if (result === 4) {
         setGameResultDetails("By 50 move rule");
       } else {
         setGameResultDetails("Stalemate");

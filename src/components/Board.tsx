@@ -26,7 +26,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         1, 1, 1, 1, 1, 1, 1, 1,
         4, 2, 3, 5, 6, 3, 2, 4]);
     const colourToMove = useRef(1);
-    const material = useRef<number[][]>([[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]]); //white material, blackMaterial
     const moveHistory = useRef<Move[]>([]);
     const historyIndex = useRef(0);
     const allMoves = useRef<Move[]>([]);
@@ -59,7 +58,6 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             4, 2, 3, 5, 6, 3, 2, 4]);
         allMoves.current = [];
         colourToMove.current = 1;
-        material.current = [[0, 8, 2, 2, 2, 1, 1], [0, 8, 2, 2, 2, 1, 1]];
         moveHistory.current = [];
         historyIndex.current = 0;
         moveGeneratorService.resetBoard();
@@ -70,21 +68,21 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         const piece = currentBoard[position];
         const colour = colourToMove.current;
         
-        if(gameMode.startsWith("menu")) {
+        if (gameMode.startsWith("menu")) {
             return;
         }
-        if(gameMode.startsWith("computer") && !compMove && colour === -playerColour) {
+        if (gameMode.startsWith("computer") && !compMove && colour === -playerColour) {
             return;
         }
-        if(playerColour === 0) { // if the player has not chosen a colour return
+        if (playerColour === 0) { // if the player has not chosen a colour return
             return;
         }
-        if(historyIndex.current+1 < moveHistory.current.length) {
+        if (historyIndex.current+1 < moveHistory.current.length) {
             //TODO: show prompt
             return;
         }
 
-        if(allMoves.current.length === 0 && compMove === null) {
+        if (allMoves.current.length === 0 && compMove === null) {
             moveGeneratorService
             .getAllMoves(colourToMove.current)
             .then(data => {
@@ -94,14 +92,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             return;
         }
 
-        if(fromPos === -1 || isSameColour(currentBoard[position], currentBoard[fromPos])) {
-            if(piece === 0 || !isSameColour(piece, colour)){ // ignore if clicked on empty square or on opponent's piece
+        if (fromPos === -1 || isSameColour(currentBoard[position], currentBoard[fromPos])) {
+            if (piece === 0 || !isSameColour(piece, colour)){ // ignore if clicked on empty square or on opponent's piece
                 return;
             }
             const allMovesFromPosition: Move[] = [];
             const attacks: Move[] = [];
             allMoves.current.filter(move => move.startSquare === position).forEach(move => {
-                if(currentBoard[move.targetSquare] !== 0) {
+                if (currentBoard[move.targetSquare] !== 0) {
                     attacks.push(move);
                 }
                 allMovesFromPosition.push(move);
@@ -112,48 +110,40 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             setChosenSquare(position);
         } else {
             const move = compMove ? compMove : potentialMoves.find(move => move.targetSquare === position);
-            if(move) {
+            if (move) {
                 let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
                 // CASTLING
                 if (move.castlingFlag) { //if king is doing castling, move rook accordingly
                     tempBoard[move.preCastlingPosition] = Piece.EMPTY;
                     tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
-                } else if(move.enpassantFlag) {
+                } else if (move.enpassantFlag) {
                     tempBoard[move.enpassantPosition] = Piece.EMPTY;
-                    material.current[move.colour > 0 ? 1 : 0][Piece.PAWN]--;
-                } else if(move.promotionFlag) {
+                } else if (move.promotionFlag) {
                     tempBoard[move.targetSquare] = Piece.QUEEN*move.colour;
-                    material.current[move.colour > 0 ? 0 : 1][Piece.QUEEN]++;
-                    material.current[move.colour > 0 ? 0 : 1][Piece.PAWN]--;
                 } else {
                     tempBoard[move.targetSquare] = tempBoard[fromPos];
                 }
-                if(move.targetPiece !== Piece.EMPTY) {
-                    material.current[move.targetPiece > 0 ? 0 : 1][Math.abs(move.targetPiece)]--;
-                }
                 tempBoard[move.startSquare] = Piece.EMPTY;
 
-                // update backend
-                if(!compMove) { // comp move is handled inside a request to get bestMove
-                    moveGeneratorService
-                        .makeMove(move)
-                        .then(gameResult => {
-                            if(gameResult > 0) {
-                                onGameEnd(move.colour, gameResult);
-                                return;
-                            }
-                        });
-                }
                 moveHistory.current.push(move);
                 historyIndex.current++;
                 allMoves.current = [];
-                
-                console.log((colour > 0 ? "White" : "Black") + " from (" + move.fromX + ", " + move.fromY + ") to (" + move.toX + ", " + move.toY + "), tp: " + move.targetPiece);
-                setCurrentBoard(tempBoard);
-
                 colourToMove.current = -colourToMove.current
-                if(gameMode.startsWith("computer") && !compMove) {
-                    makeComputerMove();
+                setCurrentBoard(tempBoard);
+                console.log((colour > 0 ? "White" : "Black") + " from (" + move.fromX + ", " + move.fromY + ") to (" + move.toX + ", " + move.toY + "), tp: " + move.targetPiece);
+                
+                // update backend
+                if (!compMove) { // comp move is handled inside a request to get bestMove
+                    moveGeneratorService
+                        .makeMove(move)
+                        .then(gameResult => {
+                            if (gameResult > 0) {
+                                onGameEnd(move.colour, gameResult);
+                                return;
+                            } else if (gameMode.startsWith("computer")) {
+                                makeComputerMove();
+                            }
+                        });
                 }
             }
             setPotentialAttacks([]);
@@ -164,27 +154,25 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     
     // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
     const makeComputerMove = () => {
-        setTimeout(() => {
-            moveGeneratorService
+        moveGeneratorService
             .getBestMove(colourToMove.current)
             .then(move => {
-                if(move.piece !== 0) {
+                if (move.piece !== 0) {
                     setChosenSquare(move.startSquare);
                     setPotentialMoves([move]);
                     makeMove(move.targetSquare, move);
                 }
-                if(move.gameResult > 0) {
+                if (move.gameResult > 0) {
                     onGameEnd(move.colour, move.gameResult);
                 }
             })
             .catch(error => {
                 console.error('There was an error:', error.message);
             });
-        }, 1000);
     }
 
     const isCellPartOfLastMove = (pos: number) => {
-        if(historyIndex.current === 0) {
+        if (historyIndex.current === 0) {
             return false;
         }
         const move = moveHistory.current[historyIndex.current-1];
@@ -195,7 +183,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         setPotentialAttacks([]);
         setPotentialMoves([]);
         setChosenSquare(-1);
-        if(fastBackward) {
+        if (fastBackward) {
             historyIndex.current = 0;
             setCurrentBoard([
                 -4, -2, -3, -5, -6, -3, -2, -4,
@@ -208,20 +196,20 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 4, 2, 3, 5, 6, 3, 2, 4]);
                 return;
         }
-        if(historyIndex.current-1 >= 0) {
+        if (historyIndex.current-1 >= 0) {
             historyIndex.current--;
             const prevMove = moveHistory.current[historyIndex.current];
             const tempBoard = [...currentBoard]; //TODO: make sure it's copied like here in other places as well
             tempBoard[prevMove.startSquare] = tempBoard[prevMove.targetSquare];
             tempBoard[prevMove.targetSquare] = prevMove.targetPiece;
-            if(prevMove.castlingFlag) {
+            if (prevMove.castlingFlag) {
                 tempBoard[prevMove.preCastlingPosition] = prevMove.colour*Piece.ROOK;
                 tempBoard[prevMove.postCastlingPosition] = 0;
             }
-            if(prevMove.enpassantFlag) {
+            if (prevMove.enpassantFlag) {
                 tempBoard[prevMove.enpassantPosition] = -prevMove.colour*Piece.PAWN;
             }
-            if(prevMove.promotionFlag) {
+            if (prevMove.promotionFlag) {
                 tempBoard[prevMove.startSquare] = prevMove.colour*Piece.PAWN;
             }
             setCurrentBoard(tempBoard);
@@ -229,7 +217,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
 
     const onNextMoveClicked = (fastForwad: boolean) => {
-        if(fastForwad) {
+        if (fastForwad) {
             let tempBoard = [...currentBoard];
             for(let i = historyIndex.current; i < moveHistory.current.length; i++) {
                 tempBoard = updateBoardAfterMove(moveHistory.current[i], tempBoard);
@@ -238,7 +226,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             setCurrentBoard(tempBoard);
             return;
         }
-        if(historyIndex.current < moveHistory.current.length) {
+        if (historyIndex.current < moveHistory.current.length) {
             const nextMove = moveHistory.current[historyIndex.current];
             const tempBoard = [...currentBoard]; //TODO: make sure it's copied like here in other places as well
             setCurrentBoard(updateBoardAfterMove(nextMove, tempBoard));
@@ -249,14 +237,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     const updateBoardAfterMove = (move: Move, board: number[]) => {
         board[move.targetSquare] = board[move.startSquare];
         board[move.startSquare] = 0;
-        if(move.castlingFlag) {
+        if (move.castlingFlag) {
             board[move.preCastlingPosition] = 0;
             board[move.postCastlingPosition] = Piece.ROOK*move.colour;
         }
-        if(move.enpassantFlag) {
+        if (move.enpassantFlag) {
             board[move.enpassantPosition] = 0;
         }
-        if(move.promotionFlag) {
+        if (move.promotionFlag) {
             board[move.targetSquare] = Piece.QUEEN*move.colour;
         }
         return board;
@@ -267,7 +255,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     }
 
     useEffect(() => {
-        if(gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
+        if (gameMode.startsWith("computer") && playerColour === -1 && colourToMove.current === -playerColour) {
             makeComputerMove();
         }
     }, [playerColour]);
@@ -285,7 +273,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 currentBoard.map((element, index) => {
                     const row = Math.floor(index / 8);
                     const column = index % 8;
-                    if((row % 2 === 0 && column % 2 === 1) || (row % 2 === 1 && column % 2 === 0)) {
+                    if ((row % 2 === 0 && column % 2 === 1) || (row % 2 === 1 && column % 2 === 0)) {
                         return(
                             <div
                                 key={index}

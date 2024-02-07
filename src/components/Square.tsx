@@ -26,10 +26,10 @@ const Square = ({piece, scale}: SquareProps) => {
     if (piece === -Piece.PAWN) {
         return <PawnBlack scale={scale}/>
     }
-    if(piece === Piece.ROOK) {
+    if (piece === Piece.ROOK) {
         return <RookWhite scale={scale}/>
     }
-    if(piece === -Piece.ROOK) {
+    if (piece === -Piece.ROOK) {
         return<RookBlack scale={scale}/>
     }
     if (piece === Piece.KNIGHT) {
