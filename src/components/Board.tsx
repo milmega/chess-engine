@@ -112,7 +112,9 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             const move = compMove ? compMove : potentialMoves.find(move => move.targetSquare === position);
             if (move) {
                 let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
-                // CASTLING
+                tempBoard[move.targetSquare] = tempBoard[fromPos];
+                tempBoard[move.startSquare] = Piece.EMPTY;
+                
                 if (move.castlingFlag) { //if king is doing castling, move rook accordingly
                     tempBoard[move.preCastlingPosition] = Piece.EMPTY;
                     tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
@@ -120,10 +122,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                     tempBoard[move.enpassantPosition] = Piece.EMPTY;
                 } else if (move.promotionFlag) {
                     tempBoard[move.targetSquare] = Piece.QUEEN*move.colour;
-                } else {
-                    tempBoard[move.targetSquare] = tempBoard[fromPos];
                 }
-                tempBoard[move.startSquare] = Piece.EMPTY;
 
                 moveHistory.current.push(move);
                 historyIndex.current++;
