@@ -14,8 +14,8 @@ export class Move {
     public changeY: number;
     public pawnTwoSquaresMove: boolean;
     public promotionFlag: boolean;
-    public enpassantFlag: boolean;
-    public enpassantPosition: number;
+    public enPassantFlag: boolean;
+    public enPassantPosition: number;
     public castlingFlag: boolean;
     public preCastlingPosition: number;
     public postCastlingPosition: number;
@@ -33,8 +33,8 @@ export class Move {
         this.castlingFlag = false;
         this.preCastlingPosition = -1;
         this.postCastlingPosition = -1;
-        this.enpassantFlag = false;
-        this.enpassantPosition = -1;
+        this.enPassantFlag = false;
+        this.enPassantPosition = -1;
         this.pawnTwoSquaresMove = false;
         this.fromX = Math.floor(startSquare / 8);
         this.fromY = startSquare % 8;

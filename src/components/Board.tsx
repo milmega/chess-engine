@@ -114,12 +114,12 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 let tempBoard = currentBoard; //TODO: Should it be copied? Yes, but makeMove for computer uses currentBoard as well which would cancel user move. Need to find a solution
                 tempBoard[move.targetSquare] = tempBoard[fromPos];
                 tempBoard[move.startSquare] = Piece.EMPTY;
-                
+
                 if (move.castlingFlag) { //if king is doing castling, move rook accordingly
                     tempBoard[move.preCastlingPosition] = Piece.EMPTY;
                     tempBoard[move.postCastlingPosition] = Piece.ROOK*move.colour;
-                } else if (move.enpassantFlag) {
-                    tempBoard[move.enpassantPosition] = Piece.EMPTY;
+                } else if (move.enPassantFlag) {
+                    tempBoard[move.enPassantPosition] = Piece.EMPTY;
                 } else if (move.promotionFlag) {
                     tempBoard[move.targetSquare] = Piece.QUEEN*move.colour;
                 }
@@ -205,8 +205,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 tempBoard[prevMove.preCastlingPosition] = prevMove.colour*Piece.ROOK;
                 tempBoard[prevMove.postCastlingPosition] = 0;
             }
-            if (prevMove.enpassantFlag) {
-                tempBoard[prevMove.enpassantPosition] = -prevMove.colour*Piece.PAWN;
+            if (prevMove.enPassantFlag) {
+                tempBoard[prevMove.enPassantPosition] = -prevMove.colour*Piece.PAWN;
             }
             if (prevMove.promotionFlag) {
                 tempBoard[prevMove.startSquare] = prevMove.colour*Piece.PAWN;
@@ -240,8 +240,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             board[move.preCastlingPosition] = 0;
             board[move.postCastlingPosition] = Piece.ROOK*move.colour;
         }
-        if (move.enpassantFlag) {
-            board[move.enpassantPosition] = 0;
+        if (move.enPassantFlag) {
+            board[move.enPassantPosition] = 0;
         }
         if (move.promotionFlag) {
             board[move.targetSquare] = Piece.QUEEN*move.colour;
