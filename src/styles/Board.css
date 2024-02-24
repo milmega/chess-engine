@@ -1,9 +1,3 @@
-.app {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .board {
     display: grid;
     grid-template-columns: repeat(8, 0fr);
@@ -19,59 +13,6 @@
 
 .board-rotated {
     rotate: 180deg;
-}
-
-.banner {
-    width: 801px;
-    height: 250px;
-    margin: 42px;
-    background: rgb(0, 0, 0, 0.7);
-    position: absolute;
-    top: 277px;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cancel-button {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    top: 15px;
-    right: 15px;
-    color: #eeeed2;
-    cursor: pointer;
-}
-
-.cancel-button:hover {
-    color: black;
-}
-
-.vertical-banner {
-    flex-direction: column;
-}
-
-.banner-text {
-    color: white;
-    opacity: 100%;
-    font-weight: 800;
-    font-size: 100px;
-    text-transform: uppercase;
-}
-
-.banner-subtext {
-    color: white;
-    opacity: 100%;
-    font-weight: 800;
-    font-size: 20px;
-    text-transform: uppercase;
-}
-
-.banner-king {
-    margin-left: 100px;
-    margin-right: 100px;
-    cursor: pointer;
 }
 
 .square {
@@ -166,19 +107,4 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-}
-
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 40px;
-}
-
-.loading-note {
-    color: #eeeed2;
-    font-size: 20px;
-    font-weight: 600;
-    margin-top: 20px;
-    text-transform: uppercase;
 }
