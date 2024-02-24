@@ -7,6 +7,7 @@ import EduSection from './components/EduSection';
 import MoveGeneratorService from './services/MoveGeneratorService';
 import Square from './components/Square';
 import { Move } from './components/Move';
+import { SyncLoader } from 'react-spinners';
 
 interface BoardRef {
     reset: () => void;
@@ -14,20 +15,19 @@ interface BoardRef {
     onNextMoveClicked: (fastForward: boolean) => void;
     fetchOpponentMove: (colour: number, gameId: number) => Move;
 }
-const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
-let playerID = 0
-if(typeof window !== 'undefined') { //TODO: implement better option for assigning ID
-    moveGeneratorService.generateID().then(id => playerID = id);
-}
 
 function App() {
     const boardRef = useRef<BoardRef | null>(null);
     const [gameResult, setGameResult] = useState("");
     const [gameResultDetails, setGameResultDetails] = useState("");
     const [gameMode, setGameMode] = useState("menu");
+    const [playerId, setPlayerId] = useState(1);
     const [playerColour, setPlayerColour] = useState(0);
     const [playerToMove, setPlayerToMove] = useState(1);
     const [gameId, setGameId] = useState<number>(-1);
+    const searching = useRef<boolean>(false);
+
+    const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
 
     const declareWinner = (colour: number, result: number) => {
         if (result === 1) {
@@ -58,27 +58,32 @@ function App() {
         boardRef.current!.reset();
         setPlayerToMove(1);
         setGameId(-1);
+        searching.current = false;
     }
 
     const startGame = (colour: number) => {
         setPlayerColour(colour);
         if(gameMode === "online") {
-            //TODO: add loading icon if user is looking for a game
-            setTimeout(() => {
-                moveGeneratorService
-                .createNewGame(colour, playerID)
-                .then(id => {
-                    if(id > 0) {
-                        setGameId(id);
-                    } else {
-                        startGame(colour);
-                    }
-                }); // TODO: button to cancel search if no opponent found
-            }, 1000);
-            
+            searching.current = true;
+            startSearch(colour);        
         } else if (gameMode === "computer") {
               setGameId(0);
         }
+    }
+
+    const startSearch = (colour: number) => {
+        setTimeout(() => {
+            moveGeneratorService
+            .createNewGame(colour, playerId)
+            .then(id => {
+                if(id > 0) {
+                    setGameId(id);
+                    searching.current = false;
+                } else {
+                    startSearch(colour);
+                }
+            }); // TODO: button to cancel search if no opponent found
+        }, 1000);
     }
 
     const learnMore = () => {
@@ -105,6 +110,12 @@ function App() {
             event.returnValue = '';
         };
         window.addEventListener('beforeunload', resetBeforeRefresh);
+
+        const idAssigned = sessionStorage.getItem('id');
+        if(!idAssigned) {
+          moveGeneratorService.generateID().then(id => setPlayerId(id));
+          sessionStorage.setItem('id', 'true');
+        }
       
         return () => {
             window.removeEventListener('beforeunload', resetBeforeRefresh); 
@@ -128,13 +139,20 @@ function App() {
                   <span className="banner-text">{gameResult}</span>
                   <span className="banner-subtext">{gameResultDetails}</span>
               </div>}
-              {playerColour === 0 && gameMode !== "menu" && 
+              {gameMode !== "menu" && playerColour === 0 && !searching.current &&
               <div className="banner">
-                  <div className="banner-king" onClick={() => startGame(1)}><Square piece={Piece.KING} scale="5"/></div>
-                  <div className="banner-king" onClick={() => startGame(-1)}><Square piece={-Piece.KING} scale="5"/></div>
+                      <div className="banner-king" onClick={() => startGame(1)}><Square piece={Piece.KING} scale="5"/></div>
+                      <div className="banner-king" onClick={() => startGame(-1)}><Square piece={-Piece.KING} scale="5"/></div>
+              </div>}
+              {gameMode !== "menu" && playerColour !== 0 && searching.current &&
+              <div className="banner">
+                  <div className="loading-container">
+                      <SyncLoader color="#eeeed2"/>
+                      <span className="loading-note">Searching for an opponent...</span>
+                  </div>
               </div>}
           </div>
-          <SideBar id={playerID} onGameReset={resetGame} onPlayOnline={() => setGameMode("online")} onPlayComputer={() => setGameMode("computer")} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
+          <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("online")} onPlayComputer={() => setGameMode("computer")} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
           {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
       </div>
     );
