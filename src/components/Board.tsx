@@ -8,11 +8,13 @@ import { Move } from "./Move";
 
 interface Props {
     onGameEnd: (colour: number, result: number) => void,
+    onPlayerToMoveChange: () => void,
     gameMode: string,
+    gameId: number,
     playerColour: number
 }
 
-const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref) => {
+const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, gameId, playerColour}: Props, ref) => {
     const [chosenSquare, setChosenSquare] = useState(-1);
     const [potentialMoves, setPotentialMoves] = useState<Move[]>([]);
     const [potentialAttacks, setPotentialAttacks] = useState<Move[]>([]);
@@ -60,7 +62,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         colourToMove.current = 1;
         moveHistory.current = [];
         historyIndex.current = 0;
-        moveGeneratorService.resetBoard();
+        moveGeneratorService.resetGame(gameId);
     }
 
     const makeMove = (position: number, compMove: Move | null = null) => { //starting square is taken from state unless computer makes move
@@ -68,26 +70,27 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
         const piece = currentBoard[position];
         const colour = colourToMove.current;
         
-        if (gameMode.startsWith("menu")) {
+        if (gameMode.startsWith("menu") || playerColour === 0) {
             return;
         }
         if (gameMode.startsWith("computer") && !compMove && colour === -playerColour) {
             return;
         }
-        if (playerColour === 0) { // if the player has not chosen a colour return
+        if (gameMode === "online" && compMove === null && playerColour !== colourToMove.current) {
             return;
         }
         if (historyIndex.current+1 < moveHistory.current.length) {
             //TODO: show prompt
             return;
         }
-
         if (allMoves.current.length === 0 && compMove === null) {
             moveGeneratorService
-            .getAllMoves(colourToMove.current)
+            .getAllMoves(gameId, colourToMove.current)
             .then(data => {
                 allMoves.current.push(...data);
-                makeMove(position, compMove);
+                if(allMoves.current.length > 0) {
+                    makeMove(position, compMove);
+                } 
             });
             return;
         }
@@ -128,13 +131,14 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
                 historyIndex.current++;
                 allMoves.current = [];
                 colourToMove.current = -colourToMove.current
+                onPlayerToMoveChange();
                 setCurrentBoard(tempBoard);
                 console.log((colour > 0 ? "White" : "Black") + " from (" + move.fromX + ", " + move.fromY + ") to (" + move.toX + ", " + move.toY + "), tp: " + move.targetPiece);
                 
                 // update backend
                 if (!compMove) { // comp move is handled inside a request to get bestMove
                     moveGeneratorService
-                        .makeMove(move)
+                        .makeMove(gameId, move)
                         .then(gameResult => {
                             if (gameResult > 0) {
                                 onGameEnd(move.colour, gameResult);
@@ -154,7 +158,7 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
     const makeComputerMove = () => {
         moveGeneratorService
-            .getBestMove(colourToMove.current)
+            .getBestMove(gameId, colourToMove.current)
             .then(move => {
                 if (move.piece !== 0) {
                     setChosenSquare(move.startSquare);
@@ -168,6 +172,19 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
             .catch(error => {
                 console.error('There was an error:', error.message);
             });
+    }
+
+    const fetchOpponentMove = (colour: number, gameId: number) => {
+        moveGeneratorService.fetchOpponentMove(gameId).then(move => {
+            if(move.colour !== colour && move.piece !== 0) {
+                setChosenSquare(move.startSquare);
+                setPotentialMoves([move]);
+                makeMove(move.targetSquare, move);
+            }
+            if (move.gameResult > 0) {
+                onGameEnd(move.colour, move.gameResult);
+            }
+        });
     }
 
     const isCellPartOfLastMove = (pos: number) => {
@@ -262,7 +279,8 @@ const Board = React.forwardRef(({onGameEnd, gameMode, playerColour}: Props, ref)
     React.useImperativeHandle(ref, () => ({
         reset,
         onPrevMoveClicked,
-        onNextMoveClicked
+        onNextMoveClicked,
+        fetchOpponentMove
     }));
 
     return (

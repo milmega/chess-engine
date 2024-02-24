@@ -3,6 +3,7 @@ import { SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
 import "../styles/SideBar.css"
 
 interface Props {
+    id: number,
     onGameReset: () => void,
     onPlayOnline: () => void,
     onPlayComputer: () => void,
@@ -11,7 +12,7 @@ interface Props {
     onNextMove: (fastForward: boolean) => void
 }
 
-const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, onLearnMore, onPrevMove, onNextMove}) => {
+const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer, onLearnMore, onPrevMove, onNextMove}) => {
 
     const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
 
@@ -46,7 +47,7 @@ const SideBar: React.FC<Props> = ({onGameReset, onPlayOnline, onPlayComputer, on
     return (
         <div className="sidebar">
             { gameMode.startsWith("menu") && <div className="pre-game-sidebar">
-                <div className="user-id-container">ID: #000001</div>
+                <div className="user-id-container">ID: #{id}</div>
                 <div>
                     <div className="button human-button" onClick={onPlayOnlineClicked}>
                         <span className="title">Play Online</span>
