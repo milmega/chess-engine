@@ -36,8 +36,8 @@ function App() {
             } else if (colour < 0) {
                 setGameResult("BLACK WINS");
             }
-        } else if(result === 6) {
-            if(playerColour > 0) {
+        } else if (result === 6) {
+            if (playerColour > 0) {
                 setGameResult("WHITE WINS");
             } else if (playerColour < 0) {
                 setGameResult("BLACK WINS");
@@ -71,7 +71,7 @@ function App() {
 
     const startGame = (colour: number) => {
         setPlayerColour(colour);
-        if(gameMode === "online") {
+        if (gameMode === "online") {
             searching.current = true;
             startSearch(colour);        
         } else if (gameMode === "computer") {
@@ -84,10 +84,10 @@ function App() {
             moveGeneratorService
             .createNewGame(colour, playerId)
             .then(id => {
-                if(id > 0) {
+                if (id > 0) {
                     setGameId(id);
                     searching.current = false;
-                } else if(searching.current) {
+                } else if (searching.current) {
                     startSearch(colour);
                 }
             });
@@ -125,7 +125,7 @@ function App() {
         window.addEventListener('beforeunload', resetBeforeRefresh);
 
         const idAssigned = sessionStorage.getItem('id');
-        if(!idAssigned) {
+        if (!idAssigned) {
           moveGeneratorService.generateID().then(id => setPlayerId(id));
           sessionStorage.setItem('id', 'true');
         }
@@ -142,7 +142,7 @@ function App() {
                     boardRef.current!.fetchOpponentMove(playerColour, gameId);
                 } else {
                     moveGeneratorService.checkIfGameIsLive(gameId).then(isLive => {
-                        if(!isLive) {
+                        if (!isLive) {
                             declareWinner(playerColour, 6);
                         }
                     });
