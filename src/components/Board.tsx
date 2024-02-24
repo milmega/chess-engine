@@ -87,9 +87,9 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
             .getAllMoves(gameId, colourToMove.current)
             .then(data => {
                 allMoves.current.push(...data);
-                if(allMoves.current.length > 0) {
+                if (allMoves.current.length > 0) {
                     makeMove(position, compMove);
-                } 
+                }
             });
             return;
         }
@@ -175,7 +175,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
 
     const fetchOpponentMove = (colour: number, gameId: number) => {
         moveGeneratorService.fetchOpponentMove(gameId).then(move => {
-            if(move.colour !== colour && move.piece !== 0) {
+            if(move.colour !== colour && move.piece !== 0 && move.gameResult !== 6) {
                 setChosenSquare(move.startSquare);
                 setPotentialMoves([move]);
                 makeMove(move.targetSquare, move);

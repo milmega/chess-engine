@@ -61,6 +61,15 @@ export default class MoveGeneratorService {
         }
     }
 
+    async checkIfGameIsLive(gameId: number): Promise<boolean> {
+        try {
+            const response: AxiosResponse<boolean> = await axios.get<boolean>(`${this.baseUrl}/isGameLive?gameId=${gameId}`);
+            return response.data;
+        } catch(error) {
+            throw new Error('Error fetching user data:' + error);
+        }
+    }
+
     async generateID(): Promise<number> {
         try {
             const response: AxiosResponse<number> = await axios.get<number>(`${this.baseUrl}/generateId`);

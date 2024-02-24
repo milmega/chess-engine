@@ -7,14 +7,13 @@ import "./styles/Board.css";
 import EduSection from './components/EduSection';
 import MoveGeneratorService from './services/MoveGeneratorService';
 import Square from './components/Square';
-import { Move } from './components/Move';
 import { SyncLoader } from 'react-spinners';
 
 interface BoardRef {
     reset: () => void;
     onPrevMoveClicked: (fastBackward: boolean) => void;
     onNextMoveClicked: (fastForward: boolean) => void;
-    fetchOpponentMove: (colour: number, gameId: number) => Move;
+    fetchOpponentMove: (colour: number, gameId: number) => boolean;
 }
 
 function App() {
@@ -33,11 +32,19 @@ function App() {
     const declareWinner = (colour: number, result: number) => {
         if (result === 1) {
             if (colour > 0) {
-                setGameResult("WHITE WINS")
+                setGameResult("WHITE WINS");
             } else if (colour < 0) {
-                setGameResult("BLACK WINS")
+                setGameResult("BLACK WINS");
             }
-        } else {
+        } else if(result === 6) {
+            if(playerColour > 0) {
+                setGameResult("WHITE WINS");
+            } else if (playerColour < 0) {
+                setGameResult("BLACK WINS");
+            }
+            setGameResultDetails("Opponent has left the game");
+        }
+        else {
             setGameResult("DRAW");
             if (result === 2) {
                 setGameResultDetails("By insufficient material");
@@ -88,8 +95,8 @@ function App() {
     }
 
     const cancelSearch = () => {
-      searching.current = false;
-      setPlayerColour(0);
+        searching.current = false;
+        setPlayerColour(0);
     }
 
     const learnMore = () => {
@@ -130,8 +137,16 @@ function App() {
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            if (gameMode === "online" && gameId > 0 && playerColour !== 0 && playerColour !== playerToMove) {
-                boardRef.current!.fetchOpponentMove(playerColour, gameId);
+            if (gameMode === "online" && gameId > 0 && playerColour !== 0) {
+                if (playerColour !== playerToMove) {
+                    boardRef.current!.fetchOpponentMove(playerColour, gameId);
+                } else {
+                    moveGeneratorService.checkIfGameIsLive(gameId).then(isLive => {
+                        if(!isLive) {
+                            declareWinner(playerColour, 6);
+                        }
+                    });
+                }
             }
         }, 1000);
         return () => clearInterval(intervalId);
