@@ -79,9 +79,8 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         if (gameMode === "online" && compMove === null && playerColour !== colourToMove.current) {
             return;
         }
-        if (historyIndex.current+1 < moveHistory.current.length) {
-            //TODO: show prompt
-            return;
+        if (historyIndex.current < moveHistory.current.length) {
+            onNextMoveClicked(true);
         }
         if (allMoves.current.length === 0 && compMove === null) {
             moveGeneratorService
