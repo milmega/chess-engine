@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ImCancelCircle } from "react-icons/im";
 import Board from './components/Board';
 import { Piece } from "./components/Piece";
 import SideBar from './components/SideBar';
@@ -79,11 +80,16 @@ function App() {
                 if(id > 0) {
                     setGameId(id);
                     searching.current = false;
-                } else {
+                } else if(searching.current) {
                     startSearch(colour);
                 }
-            }); // TODO: button to cancel search if no opponent found
+            });
         }, 1000);
+    }
+
+    const cancelSearch = () => {
+      searching.current = false;
+      setPlayerColour(0);
     }
 
     const learnMore = () => {
@@ -146,6 +152,7 @@ function App() {
               </div>}
               {gameMode !== "menu" && playerColour !== 0 && searching.current &&
               <div className="banner">
+                <ImCancelCircle className="cancel-button" onClick={cancelSearch}/>
                   <div className="loading-container">
                       <SyncLoader color="#eeeed2"/>
                       <span className="loading-note">Searching for an opponent...</span>

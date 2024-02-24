@@ -34,6 +34,20 @@
     justify-content: center;
 }
 
+.cancel-button {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 15px;
+    right: 15px;
+    color: #eeeed2;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    color: black;
+}
+
 .vertical-banner {
     flex-direction: column;
 }
