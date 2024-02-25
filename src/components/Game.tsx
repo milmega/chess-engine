@@ -89,6 +89,8 @@ const Game = () => {
                     searching.current = false;
                 } else if (searching.current) {
                     startSearch(colour);
+                } else {
+                    moveGeneratorService.cancelSearch(playerId);
                 }
             });
         }, 1000);

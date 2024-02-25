@@ -52,6 +52,14 @@ export default class MoveGeneratorService {
             });
     }
 
+    async cancelSearch(playerId: number) {
+        axios.post(`${this.baseUrl}/cancelSearch?id=${playerId}`)
+            .then(_ => console.log('Search cancelled successfully'))
+            .catch(error => {
+                console.error('Error making the request:', error);
+            });
+    }
+
     async fetchOpponentMove(gameId: number): Promise<Move> {
         try {
             const response: AxiosResponse<Move> = await axios.get<Move>(`${this.baseUrl}/fetchMove?gameId=${gameId}`);
