@@ -70,6 +70,9 @@ const Game = () => {
     }
 
     const startGame = (colour: number) => {
+        if (colour === 0) {
+            colour = Math.random() > 0.5 ? 1 : -1;
+        }
         setPlayerColour(colour);
         if (gameMode === "online") {
             searching.current = true;
@@ -165,6 +168,10 @@ const Game = () => {
                 {gameMode !== "menu" && playerColour === 0 && !searching.current &&
                 <div className="banner">
                         <div className="banner-king" onClick={() => startGame(1)}><Square piece={Piece.KING} scale="5"/></div>
+                        <div className="banner-double-king" onClick={() => startGame(0)}>
+                            <div className="white-half"><Square piece={Piece.KING} scale="5"/></div>
+                            <div className="black-half"><Square piece={-Piece.KING} scale="5"/></div>
+                        </div>
                         <div className="banner-king" onClick={() => startGame(-1)}><Square piece={-Piece.KING} scale="5"/></div>
                 </div>}
                 {gameMode !== "menu" && playerColour !== 0 && searching.current &&

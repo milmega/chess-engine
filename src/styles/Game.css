@@ -57,6 +57,35 @@
     cursor: pointer;
 }
 
+.banner-double-king {
+    position: relative;
+    width: 210px;
+    height: 210px;
+    cursor: pointer;
+}
+
+.white-half {
+    position: absolute;
+    display: flex;
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0% 100%);
+    width: 210px;
+    height: 210px;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.black-half {
+    position: absolute;
+    display: flex;
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+    width: 210px;
+    height: 210px;
+    align-items: center;
+    justify-content: center;
+    
+}
+
 .loading-container {
     display: flex;
     flex-direction: column;
