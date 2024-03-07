@@ -1,0 +1,21 @@
+.timer-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-rotated {
+    rotate: 180deg;
+}
+
+.timer-text {
+    width: 50px;
+    display: flex;
+    justify-content: center;
+    padding: 2px;
+    margin: 3px;
+    color: black;
+    background-color: #eeeed2;
+    border: black solid 3px;
+    border-radius: 15%;
+}

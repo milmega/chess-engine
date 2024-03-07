@@ -14,6 +14,7 @@ interface BoardRef {
     onPrevMoveClicked: (fastBackward: boolean) => void;
     onNextMoveClicked: (fastForward: boolean) => void;
     fetchOpponentMove: (colour: number, gameId: number) => boolean;
+    startTimer: () => void;
 }
 
 const Game = () => {
@@ -43,6 +44,14 @@ const Game = () => {
                 setGameResult("BLACK WINS");
             }
             setGameResultDetails("Opponent has left the game");
+        } else if (result === 7) {
+            if (colour > 0) {
+                setGameResult("WHITE WINS")
+            } else if (colour < 0) {
+                setGameResult("BLACK WINS");
+            }
+            setGameResultDetails("Time is up")
+
         }
         else {
             setGameResult("DRAW");
@@ -74,11 +83,12 @@ const Game = () => {
             colour = Math.random() > 0.5 ? 1 : -1;
         }
         setPlayerColour(colour);
-        if (gameMode === "online") {
+        if (gameMode === "searching") {
             searching.current = true;
             startSearch(colour);        
         } else if (gameMode === "computer") {
               setGameId(0);
+              boardRef.current!.startTimer(); //TODO: send this time to backend and correct it when get back
         }
     }
 
@@ -90,6 +100,8 @@ const Game = () => {
                 if (id > 0) {
                     setGameId(id);
                     searching.current = false;
+                    setGameMode("online");
+                    boardRef.current!.startTimer();
                 } else if (searching.current) {
                     startSearch(colour);
                 } else {
@@ -183,7 +195,7 @@ const Game = () => {
                     </div>
                 </div>}
             </div>
-            <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("online")} onPlayComputer={() => setGameMode("computer")} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
+            <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("searching")} onPlayComputer={() => setGameMode("computer")} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
             {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
         </div>
       );

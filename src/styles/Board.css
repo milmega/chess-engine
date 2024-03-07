@@ -1,9 +1,15 @@
+.board-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0px 40px 0 40px;
+    transform: scale(0.95);
+}
+
 .board {
     display: grid;
     grid-template-columns: repeat(8, 0fr);
     border: 3px solid black;
     width: min-content;
-    margin: 40px 40px 0 40px;
     opacity: 40%;
 }
 
@@ -107,4 +113,8 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
+}
+
+.timer-container {
+    height: 33px;
 }

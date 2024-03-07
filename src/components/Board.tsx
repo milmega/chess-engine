@@ -5,6 +5,7 @@ import React from "react";
 import MoveGeneratorService from "../services/MoveGeneratorService";
 import { Piece } from "./Piece";
 import { Move } from "./Move";
+import Timer from "./Timer";
 
 interface Props {
     onGameEnd: (colour: number, result: number) => void,
@@ -12,6 +13,12 @@ interface Props {
     gameMode: string,
     gameId: number,
     playerColour: number
+}
+
+interface TimerRef {
+    startTimer: () => void;
+    stopTimer: () => void;
+    resetTimer: () => void;
 }
 
 const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, gameId, playerColour}: Props, ref) => {
@@ -31,6 +38,8 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
     const moveHistory = useRef<Move[]>([]);
     const historyIndex = useRef(0);
     const allMoves = useRef<Move[]>([]);
+    const whiteTimer = useRef<TimerRef | null>(null);
+    const blackTimer = useRef<TimerRef | null>(null);
 
      /*
         -4, -2, -3, -5, -6, -3, -2, -4,
@@ -62,6 +71,8 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         colourToMove.current = 1;
         moveHistory.current = [];
         historyIndex.current = 0;
+        whiteTimer.current?.resetTimer();
+        blackTimer.current?.resetTimer();
         moveGeneratorService.resetGame(gameId);
     }
 
@@ -147,6 +158,14 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                             }
                         });
                 }
+                if(colour === 1) {
+                    whiteTimer.current?.stopTimer();
+                    blackTimer.current?.startTimer();
+                } else if (colour === -1) {
+                    blackTimer.current?.stopTimer();
+                    whiteTimer.current?.startTimer();
+                }
+                
             }
             setPotentialAttacks([]);
             setPotentialMoves([]);
@@ -154,7 +173,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         }
     }
     
-    // calls backend service to get best move for a copouter; start and destination are coors of the player's last move
+    // calls backend service to get best move for a computer; start and destination are coors of the player's last move
     const makeComputerMove = () => {
         moveGeneratorService
             .getBestMove(gameId, colourToMove.current)
@@ -265,6 +284,10 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         return board;
     }
 
+    const startTimer = () => {
+        whiteTimer.current?.startTimer();
+    }
+
     const isSameColour = (piece: number, colour: number) => {
         return (piece > 0 && colour > 0) || (piece < 0 && colour < 0)
     }
@@ -279,17 +302,47 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         reset,
         onPrevMoveClicked,
         onNextMoveClicked,
-        fetchOpponentMove
+        fetchOpponentMove,
+        startTimer
     }));
 
     return (
         <>
-            <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : "" } ${playerColour === -1 ? "board-rotated" : ""}`}>
-                {
-                currentBoard.map((element, index) => {
-                    const row = Math.floor(index / 8);
-                    const column = index % 8;
-                    if ((row % 2 === 0 && column % 2 === 1) || (row % 2 === 1 && column % 2 === 0)) {
+            <div className={`board-container ${playerColour === -1 ? "board-rotated" : ""}`}>
+                <div className="timer-container">
+                    {gameMode === "online" && playerColour !== 0 && <Timer ref={blackTimer} rotate={playerColour === -1} onTimeUp={() => onGameEnd(1, 7)}/>}
+                </div>
+                <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : "" }`}>
+                    {
+                    currentBoard.map((element, index) => {
+                        const row = Math.floor(index / 8);
+                        const column = index % 8;
+                        if ((row % 2 === 0 && column % 2 === 1) || (row % 2 === 1 && column % 2 === 0)) {
+                            return(
+                                <div
+                                    key={index}
+                                    onClick={() => makeMove(index)}
+                                    className={`square
+                                        ${playerColour === -1 ? "rotated-square" : ""}
+                                        ${index === chosenSquare
+                                            ? "chosen-square" 
+                                            : isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
+                                    {element !== 0 && potentialAttacks.some(attack => attack.targetSquare === index) && 
+                                        <div className={`outer-circle 
+                                            ${isCellPartOfLastMove(index) ? "last-move-dark-circle" : " dark-gray-circle"}`}>
+                                            <div className={`inner-circle
+                                                ${isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
+                                                <Square piece={element}/>
+                                            </div>
+                                        </div>
+                                    }
+                                    {element !== 0 && !potentialAttacks.some(attack => attack.targetSquare === index) && <Square piece={element}/>}
+                                    {element === 0 && potentialMoves.some(move => move.targetSquare === index) &&
+                                        <div className={`${isCellPartOfLastMove(index) ? "last-move-dark-dot" : "dark-gray-dot"}`}></div>
+                                    }
+                                </div>
+                            );
+                        }
                         return(
                             <div
                                 key={index}
@@ -297,49 +350,28 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                                 className={`square
                                     ${playerColour === -1 ? "rotated-square" : ""}
                                     ${index === chosenSquare
-                                        ? "chosen-square" 
-                                        : isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
+                                        ? "chosen-square"
+                                        : isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
                                 {element !== 0 && potentialAttacks.some(attack => attack.targetSquare === index) && 
-                                    <div className={`outer-circle 
-                                        ${isCellPartOfLastMove(index) ? "last-move-dark-circle" : " dark-gray-circle"}`}>
+                                    <div className={`outer-circle
+                                        ${isCellPartOfLastMove(index) ? "last-move-light-circle" : "light-gray-circle"}`}>
                                         <div className={`inner-circle
-                                            ${isCellPartOfLastMove(index) ? "last-move-square-dark" : "dark-square"}`}>
+                                            ${isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
                                             <Square piece={element}/>
                                         </div>
                                     </div>
                                 }
                                 {element !== 0 && !potentialAttacks.some(attack => attack.targetSquare === index) && <Square piece={element}/>}
                                 {element === 0 && potentialMoves.some(move => move.targetSquare === index) &&
-                                    <div className={`${isCellPartOfLastMove(index) ? "last-move-dark-dot" : "dark-gray-dot"}`}></div>
+                                    <div className={`${isCellPartOfLastMove(index) ? "last-move-light-dot" : "light-gray-dot"}`}></div>
                                 }
                             </div>
                         );
-                    }
-                    return(
-                        <div
-                            key={index}
-                            onClick={() => makeMove(index)}
-                            className={`square
-                                ${playerColour === -1 ? "rotated-square" : ""}
-                                ${index === chosenSquare
-                                    ? "chosen-square"
-                                    : isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
-                            {element !== 0 && potentialAttacks.some(attack => attack.targetSquare === index) && 
-                                <div className={`outer-circle
-                                    ${isCellPartOfLastMove(index) ? "last-move-light-circle" : "light-gray-circle"}`}>
-                                    <div className={`inner-circle
-                                        ${isCellPartOfLastMove(index) ? "last-move-square-light" : "light-square"}`}>
-                                        <Square piece={element}/>
-                                    </div>
-                                </div>
-                            }
-                            {element !== 0 && !potentialAttacks.some(attack => attack.targetSquare === index) && <Square piece={element}/>}
-                            {element === 0 && potentialMoves.some(move => move.targetSquare === index) &&
-                                <div className={`${isCellPartOfLastMove(index) ? "last-move-light-dot" : "light-gray-dot"}`}></div>
-                            }
-                        </div>
-                    );
-                })}
+                    })}
+                </div>
+                <div className="timer-container">
+                    {gameMode === "online" && playerColour !== 0 && <Timer ref={whiteTimer} rotate={playerColour === -1} onTimeUp={() => onGameEnd(-1, 7)}/>}
+                </div>
             </div>
         </>
         )

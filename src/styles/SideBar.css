@@ -57,19 +57,6 @@
     font-weight: 500;
 }
 
-.id-input {
-    width: 100px;
-    height: 25px;
-    font-size: 15px;
-    margin-top: 10px;
-    background-color: #eeeed2;
-    text-align: center;
-}
-
-.id-input:focus {
-    outline: none;
-}
-
 .user-id-container {
     color: #eeeed2;
     font-size: 40px;

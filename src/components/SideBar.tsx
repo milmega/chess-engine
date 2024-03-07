@@ -52,7 +52,6 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
                     <div className="button human-button" onClick={onPlayOnlineClicked}>
                         <span className="title">Play Online</span>
                         <span className="subtitle">Play against another user</span>
-                        <input className="id-input" placeholder="USER ID"></input>
                     </div>
                     <div className="button computer-button" onClick={onPlayComputerClicked}>
                         <span className="title">Play Computer</span>
