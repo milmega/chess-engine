@@ -52,7 +52,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         4, 2, 3, 5, 6, 3, 2, 4]);
         */
 
-    const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
+    const moveGeneratorService = new MoveGeneratorService('https://chess-engine-service-sjnc6hg37q-ew.a.run.app');
 
     const reset = () => {
         setChosenSquare(-1);
