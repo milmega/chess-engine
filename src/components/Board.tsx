@@ -228,7 +228,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                 0, 0, 0, 0, 0, 0, 0, 0,
                 1, 1, 1, 1, 1, 1, 1, 1,
                 4, 2, 3, 5, 6, 3, 2, 4]);
-                return;
+                return true;
         }
         if (historyIndex.current-1 >= 0) {
             historyIndex.current--;
@@ -248,6 +248,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
             }
             setCurrentBoard(tempBoard);
         }
+        return true;
     }
 
     const onNextMoveClicked = (fastForwad: boolean) => {
@@ -258,7 +259,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                 historyIndex.current++;
             }
             setCurrentBoard(tempBoard);
-            return;
+            return false;
         }
         if (historyIndex.current < moveHistory.current.length) {
             const nextMove = moveHistory.current[historyIndex.current];
@@ -266,6 +267,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
             setCurrentBoard(updateBoardAfterMove(nextMove, tempBoard));
             historyIndex.current++;
         }
+        return historyIndex.current !== moveHistory.current.length;
     }
 
     const updateBoardAfterMove = (move: Move, board: number[]) => {
@@ -312,7 +314,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                 <div className="timer-container">
                     {gameMode === "online" && playerColour !== 0 && <Timer ref={blackTimer} rotate={playerColour === -1} onTimeUp={() => onGameEnd(1, 7)}/>}
                 </div>
-                <div className={`board ${!gameMode.startsWith("menu") ? "board-active" : "" }`}>
+                <div className={`board ${!gameMode.startsWith("menu") || historyIndex.current < moveHistory.current.length ? "board-active" : "" }`}>
                     {
                     currentBoard.map((element, index) => {
                         const row = Math.floor(index / 8);

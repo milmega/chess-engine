@@ -11,8 +11,8 @@ import { SyncLoader } from 'react-spinners';
 
 interface BoardRef {
     reset: () => void;
-    onPrevMoveClicked: (fastBackward: boolean) => void;
-    onNextMoveClicked: (fastForward: boolean) => void;
+    onPrevMoveClicked: (fastBackward: boolean) => boolean;
+    onNextMoveClicked: (fastForward: boolean) => boolean;
     fetchOpponentMove: (colour: number, gameId: number) => boolean;
     startTimer: () => void;
 }
@@ -26,6 +26,7 @@ const Game = () => {
     const [playerColour, setPlayerColour] = useState(0);
     const [playerToMove, setPlayerToMove] = useState(1);
     const [gameId, setGameId] = useState<number>(-1);
+    const [checkingHistory, setCheckingHistory] = useState<boolean>(false);
     const searching = useRef<boolean>(false);
 
     const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
@@ -126,13 +127,14 @@ const Game = () => {
     }
 
     const onPrevMoveClicked = (fastBackward: boolean) => {
-        boardRef.current!.onPrevMoveClicked(fastBackward);
+        setCheckingHistory(boardRef.current!.onPrevMoveClicked(fastBackward));
+        console.log(checkingHistory);
     }
 
     const onNextMoveClicked = (fastForward: boolean) => {
-        boardRef.current!.onNextMoveClicked(fastForward);
+        setCheckingHistory(boardRef.current!.onNextMoveClicked(fastForward));
     }
-
+    
     useEffect(() => {
         const resetBeforeRefresh = (event: BeforeUnloadEvent) => {
             event.preventDefault();
@@ -173,7 +175,7 @@ const Game = () => {
         <div className="game-container">
             <div>
                 <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} gameId={gameId} playerColour={playerColour} onPlayerToMoveChange={() => setPlayerToMove(-playerToMove)}/>
-                {gameResult && <div className="banner vertical-banner">
+                {gameResult && !checkingHistory && <div className="banner vertical-banner">
                     <span className="banner-text">{gameResult}</span>
                     <span className="banner-subtext">{gameResultDetails}</span>
                 </div>}
