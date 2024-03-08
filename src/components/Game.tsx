@@ -29,6 +29,7 @@ const Game = () => {
     const [checkingHistory, setCheckingHistory] = useState<boolean>(false);
     const searching = useRef<boolean>(false);
 
+    //const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
     const moveGeneratorService = new MoveGeneratorService('https://chess-engine-service-sjnc6hg37q-ew.a.run.app/');
 
     const declareWinner = (colour: number, result: number) => {
