@@ -4,8 +4,9 @@ import { Move } from '../components/Move';
 export default class MoveGeneratorService {
     private baseUrl: string;
 
-    constructor(baseUrl: string) {
-      this.baseUrl = baseUrl;
+    constructor() {
+      this.baseUrl = 'https://chess-engine-service-sjnc6hg37q-ew.a.run.app';
+      //this.baseUrl = 'http://localhost:8080';
     }
 
     async getBestMove(id: number, colour: number): Promise<Move> {

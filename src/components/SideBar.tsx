@@ -7,12 +7,11 @@ interface Props {
     onGameReset: () => void,
     onPlayOnline: () => void,
     onPlayComputer: () => void,
-    onLearnMore: () => void,
     onPrevMove: (fastBackward: boolean) => void,
     onNextMove: (fastForward: boolean) => void
 }
 
-const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer, onLearnMore, onPrevMove, onNextMove}) => {
+const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove}) => {
 
     const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
 
@@ -29,11 +28,6 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
     const onLeaveGameClicked = () => {
         setGameMode("menu");
         onGameReset();
-    }
-
-    const onLearnMoreClicked = () => {
-        setGameMode("menu-edu");
-        onLearnMore();
     }
 
     const onPrevMoveBtnClicked = (fastBackward: boolean) => {
@@ -57,10 +51,6 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
                         <span className="title">Play Computer</span>
                         <span className="subtitle">Play against a bot</span>
                     </div>
-                </div>
-                <div className="button learn-more-button" onClick={onLearnMoreClicked}>
-                    <span className="learn-more-title">Learn More</span>
-                    <span className="learn-more-subtitle">Learn about AI algorithms</span>
                 </div>
             </div> }
             { !gameMode.startsWith("menu") && <div className="game-sidebar">

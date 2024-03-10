@@ -4,7 +4,6 @@ import Board from './Board';
 import { Piece } from "./Piece";
 import SideBar from './SideBar';
 import "./../styles/Game.css";
-import EduSection from './EduSection';
 import MoveGeneratorService from './../services/MoveGeneratorService';
 import Square from './Square';
 import { SyncLoader } from 'react-spinners';
@@ -29,8 +28,7 @@ const Game = () => {
     const [checkingHistory, setCheckingHistory] = useState<boolean>(false);
     const searching = useRef<boolean>(false);
 
-    //const moveGeneratorService = new MoveGeneratorService('http://localhost:8080');
-    const moveGeneratorService = new MoveGeneratorService('https://chess-engine-service-sjnc6hg37q-ew.a.run.app/');
+    const moveGeneratorService = new MoveGeneratorService();
 
     const declareWinner = (colour: number, result: number) => {
         if (result === 1) {
@@ -118,15 +116,6 @@ const Game = () => {
         setPlayerColour(0);
     }
 
-    const learnMore = () => {
-        console.log("learning more");
-        setGameMode("menu-edu");
-    }
-
-    const onEduSectionExit = () => {
-        setGameMode("menu");
-    }
-
     const onPrevMoveClicked = (fastBackward: boolean) => {
         setCheckingHistory(boardRef.current!.onPrevMoveClicked(fastBackward));
         console.log(checkingHistory);
@@ -198,8 +187,7 @@ const Game = () => {
                     </div>
                 </div>}
             </div>
-            <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("searching")} onPlayComputer={() => setGameMode("computer")} onLearnMore={learnMore} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
-            {gameMode === "menu-edu" && <EduSection onEduExit={onEduSectionExit}/>}
+            <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("searching")} onPlayComputer={() => setGameMode("computer")} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
         </div>
       );
 
