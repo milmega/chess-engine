@@ -52,6 +52,7 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
                         <span className="subtitle">Play against a bot</span>
                     </div>
                 </div>
+                <div></div>
             </div> }
             { !gameMode.startsWith("menu") && <div className="game-sidebar">
                 <div className="leave-game-button" onClick={onLeaveGameClicked}>

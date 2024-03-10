@@ -30,7 +30,6 @@
 .human-button {
     background-color: #769656;
     color: #eeeed2;
-    margin-top: 47px;
 }
 
 .human-button:hover {
@@ -40,6 +39,7 @@
 .computer-button {
     background-color: #eeeed2;
     color: #769656;
+    margin-bottom: 100px
 }
 
 .computer-button:hover {
