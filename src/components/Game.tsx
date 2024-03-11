@@ -159,7 +159,6 @@ const Game = () => {
         const intervalId = setInterval(() => {
             if (gameMode === "online" && gameId > 0 && playerColour !== 0) {
                 moveGeneratorService.fetchUpdate(gameId).then(gameState => {
-                    console.log(gameState);
                     const lastMove = gameState.lastMove;
                     if(playerColour !== playerToMove && 
                         lastMove.colour !== playerColour && 
@@ -169,7 +168,6 @@ const Game = () => {
                         }
                     if (lastMove.gameResult > 0) {
                         declareWinner(lastMove.colour, lastMove.gameResult);
-                        return;
                     } else if (!gameState.isGameLive) {
                         declareWinner(playerColour, 6);
                     } else {
