@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { Move } from '../components/Move';
+import { GameState } from '../components/GameState';
 
 export default class MoveGeneratorService {
     private baseUrl: string;
@@ -61,23 +62,15 @@ export default class MoveGeneratorService {
             });
     }
 
-    async fetchOpponentMove(gameId: number): Promise<Move> {
+    async fetchUpdate(gameId: number): Promise<GameState> {
         try {
-            const response: AxiosResponse<Move> = await axios.get<Move>(`${this.baseUrl}/fetchMove?gameId=${gameId}`);
+            const response: AxiosResponse<GameState> = await axios.get<GameState>(`${this.baseUrl}/fetchUpdate?gameId=${gameId}`);
             return response.data;
         } catch(error) {
-            throw new Error('Error fetching user data:' + error);
+            throw new Error('Error fetching game state:' + error);
         }
     }
 
-    async checkIfGameIsLive(gameId: number): Promise<boolean> {
-        try {
-            const response: AxiosResponse<boolean> = await axios.get<boolean>(`${this.baseUrl}/isGameLive?gameId=${gameId}`);
-            return response.data;
-        } catch(error) {
-            throw new Error('Error fetching user data:' + error);
-        }
-    }
 
     async generateID(): Promise<number> {
         try {
