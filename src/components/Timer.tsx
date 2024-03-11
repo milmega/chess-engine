@@ -8,20 +8,14 @@ interface Props {
 }
 
 const Timer = React.forwardRef((props: Props, ref) => {
-    const [time, setTime] = useState(15*60*1000);
-    const [isActive, setActive] = useState(false);
-
-    const startTimer = () => {
-        setActive(true);
-    }
-
-    const stopTimer = () => {
-        setActive(false);
-    }
+    const [time, setTime] = useState(15*60);
 
     const resetTimer = () => {
-        setTime(15*60*1000);
-        setActive(false);
+        setTime(15*60);
+    }
+
+    const updateTimer = (time: number) => {
+        setTime(time);
     }
 
     const formatTime = (val: number): string => {
@@ -32,24 +26,18 @@ const Timer = React.forwardRef((props: Props, ref) => {
 
     useEffect(() => {
         if(time === 0) {
-            setActive(false);
             props.onTimeUp();
         }
-        if(isActive) {
-            const interval = setInterval(() => setTime((prevTime) => prevTime - 100), 100);
-            return () => clearInterval(interval);
-        }
-    }, [isActive, time]);
+    }, [time]);
 
     React.useImperativeHandle(ref, () => ({
-        startTimer,
-        stopTimer,
-        resetTimer
+        resetTimer,
+        updateTimer
     }));
 
     return(
         <div className={`timer ${props.white ? 'white-timer' : 'black-timer'}`}>
-            <span className="timer-text">{formatTime(Math.floor(time/1000))}</span>
+            <span className="timer-text">{formatTime(time)}</span>
         </div>
     );
 });

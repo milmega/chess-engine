@@ -15,9 +15,8 @@ interface Props {
 }
 
 interface TimerRef {
-    startTimer: () => void;
-    stopTimer: () => void;
     resetTimer: () => void;
+    updateTimer: (time: number) => void;
 }
 
 const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove, playerColour}: Props, ref) => {
@@ -49,14 +48,9 @@ const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayC
         onNextMove(fastForward);
     }
 
-    const startTimer = (colour: number) => {
-        if(colour > 0) {
-            whiteTimer.current!.startTimer();
-            blackTimer.current!.stopTimer();
-        } else {
-            blackTimer.current!.startTimer();
-            whiteTimer.current!.stopTimer();
-        }
+    const updateTimer = (whiteTime: number, blackTime: number) => {
+        whiteTimer.current!.updateTimer(whiteTime);
+        blackTimer.current!.updateTimer(blackTime);
     }
 
     const resetTimer = () => {
@@ -65,8 +59,8 @@ const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayC
     }
 
     React.useImperativeHandle(ref, () => ({
-        startTimer,
-        resetTimer
+        resetTimer,
+        updateTimer
     }));
 
     return (

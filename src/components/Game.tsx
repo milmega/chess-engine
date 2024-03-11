@@ -7,17 +7,18 @@ import "./../styles/Game.css";
 import MoveGeneratorService from './../services/MoveGeneratorService';
 import Square from './Square';
 import { SyncLoader } from 'react-spinners';
+import { Move } from './Move';
 
 interface BoardRef {
     reset: () => void;
     onPrevMoveClicked: (fastBackward: boolean) => boolean;
     onNextMoveClicked: (fastForward: boolean) => boolean;
-    fetchOpponentMove: (colour: number, gameId: number) => boolean;
+    updateFetchedMove: (move: Move) => void;
 }
 
 interface SidebarRef {
-    startTimer: (colour: number) => void;
     resetTimer: () => void;
+    updateTimer: (whiteTime: number, blackTime: number) => void;
 }
 
 const Game = () => {
@@ -110,7 +111,7 @@ const Game = () => {
                         setGameId(id);
                         searching.current = false;
                         setGameMode("online");
-                        sidebarRef.current!.startTimer(1);
+                        sidebarRef.current!.updateTimer(15*60-1, 15*60);
                     } else if (searching.current) {
                         startSearch(colour);
                     } else {
@@ -132,11 +133,6 @@ const Game = () => {
 
     const onNextMoveClicked = (fastForward: boolean) => {
         setCheckingHistory(boardRef.current!.onNextMoveClicked(fastForward));
-    }
-
-    const onPlayerToMoveChange = () => {
-        setPlayerToMove(-playerToMove);
-        sidebarRef.current!.startTimer(-playerToMove);
     }
     
     useEffect(() => {
@@ -162,15 +158,24 @@ const Game = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (gameMode === "online" && gameId > 0 && playerColour !== 0) {
-                if (playerColour !== playerToMove) {
-                    boardRef.current!.fetchOpponentMove(playerColour, gameId);
-                } else {
-                    moveGeneratorService.checkIfGameIsLive(gameId).then(isLive => {
-                        if (!isLive) {
-                            declareWinner(playerColour, 6);
+                moveGeneratorService.fetchUpdate(gameId).then(gameState => {
+                    console.log(gameState);
+                    const lastMove = gameState.lastMove;
+                    if(playerColour !== playerToMove && 
+                        lastMove.colour !== playerColour && 
+                        lastMove.piece !== 0 && 
+                        lastMove.gameResult !== 6) {
+                            boardRef.current!.updateFetchedMove(lastMove);
                         }
-                    });
-                }
+                    if (lastMove.gameResult > 0) {
+                        declareWinner(lastMove.colour, lastMove.gameResult);
+                        return;
+                    } else if (!gameState.isGameLive) {
+                        declareWinner(playerColour, 6);
+                    } else {
+                        sidebarRef.current!.updateTimer(gameState.whiteTime, gameState.blackTime);
+                    }
+                });
             }
         }, 1000);
         return () => clearInterval(intervalId);
@@ -185,7 +190,7 @@ const Game = () => {
                     gameId={gameId} 
                     playerColour={playerColour}
                     onGameEnd={declareWinner} 
-                    onPlayerToMoveChange={onPlayerToMoveChange}/>
+                    onPlayerToMoveChange={() => setPlayerToMove(-playerToMove)}/>
                 {gameResult && !checkingHistory && <div className="banner vertical-banner">
                     <span className="banner-text">{gameResult}</span>
                     <span className="banner-subtext">{gameResultDetails}</span>

@@ -174,17 +174,10 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
             });
     }
 
-    const fetchOpponentMove = (colour: number, gameId: number) => {
-        moveGeneratorService.fetchOpponentMove(gameId).then(move => {
-            if (move.colour !== colour && move.piece !== 0 && move.gameResult !== 6) {
-                setChosenSquare(move.startSquare);
-                setPotentialMoves([move]);
-                makeMove(move.targetSquare, move);
-            }
-            if (move.gameResult > 0) {
-                onGameEnd(move.colour, move.gameResult);
-            }
-        });
+    const updateFetchedMove = (move: Move) => {
+        setChosenSquare(move.startSquare);
+        setPotentialMoves([move]);
+        makeMove(move.targetSquare, move);
     }
 
     const isCellPartOfLastMove = (pos: number) => {
@@ -282,7 +275,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         reset,
         onPrevMoveClicked,
         onNextMoveClicked,
-        fetchOpponentMove
+        updateFetchedMove
     }));
 
     return (
