@@ -64,7 +64,7 @@ export default class MoveGeneratorService {
 
     async fetchUpdate(gameId: number): Promise<GameState> {
         try {
-            const response: AxiosResponse<GameState> = await axios.get<GameState>(`${this.baseUrl}/fetchUpdate?gameId=${gameId}`);
+            const response: AxiosResponse<GameState> = await axios.get<GameState>(`${this.baseUrl}/fetchUpdate?id=${gameId}`);
             return response.data;
         } catch(error) {
             throw new Error('Error fetching game state:' + error);
