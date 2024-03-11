@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
 import "../styles/SideBar.css"
+import Timer from "./Timer";
+import React from "react";
 
 interface Props {
-    id: number,
     onGameReset: () => void,
     onPlayOnline: () => void,
     onPlayComputer: () => void,
     onPrevMove: (fastBackward: boolean) => void,
-    onNextMove: (fastForward: boolean) => void
+    onNextMove: (fastForward: boolean) => void,
+    onGameEnd: (colour: number, reason: number) => void,
+    playerColour: number
 }
 
-const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove}) => {
+interface TimerRef {
+    startTimer: () => void;
+    stopTimer: () => void;
+    resetTimer: () => void;
+}
+
+const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove, playerColour}: Props, ref) => {
 
     const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
+    const whiteTimer = useRef<TimerRef | null>(null);
+    const blackTimer = useRef<TimerRef | null>(null);
 
     const onPlayComputerClicked = () => {
         setGameMode("computer");
@@ -38,10 +49,29 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
         onNextMove(fastForward);
     }
 
+    const startTimer = (colour: number) => {
+        if(colour > 0) {
+            whiteTimer.current!.startTimer();
+            blackTimer.current!.stopTimer();
+        } else {
+            blackTimer.current!.startTimer();
+            whiteTimer.current!.stopTimer();
+        }
+    }
+
+    const resetTimer = () => {
+        whiteTimer.current?.resetTimer();
+        blackTimer.current?.resetTimer();
+    }
+
+    React.useImperativeHandle(ref, () => ({
+        startTimer,
+        resetTimer
+    }));
+
     return (
         <div className="sidebar">
             { gameMode.startsWith("menu") && <div className="pre-game-sidebar">
-                <div className="user-id-container">ID: #{id}</div>
                 <div>
                     <div className="button human-button" onClick={onPlayOnlineClicked}>
                         <span className="title">Play Online</span>
@@ -72,8 +102,13 @@ const SideBar: React.FC<Props> = ({id, onGameReset, onPlayOnline, onPlayComputer
                         <SlControlEnd className="move-button-icon"/>
                     </div>
                 </div>
+                { gameMode.startsWith("online") && <div className="timer-container">
+                    <Timer ref={whiteTimer} white={true} onTimeUp={() => onGameEnd(-1, 7)}/>
+                    <Timer ref={blackTimer} white={false} onTimeUp={() => onGameEnd(1, 7)}/>
+                </div>}
             </div> }
         </div>
     );
-}
+});
+
 export default SideBar;

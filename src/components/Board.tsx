@@ -5,7 +5,6 @@ import React from "react";
 import MoveGeneratorService from "../services/MoveGeneratorService";
 import { Piece } from "./Piece";
 import { Move } from "./Move";
-import Timer from "./Timer";
 
 interface Props {
     onGameEnd: (colour: number, result: number) => void,
@@ -13,12 +12,6 @@ interface Props {
     gameMode: string,
     gameId: number,
     playerColour: number
-}
-
-interface TimerRef {
-    startTimer: () => void;
-    stopTimer: () => void;
-    resetTimer: () => void;
 }
 
 const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, gameId, playerColour}: Props, ref) => {
@@ -38,8 +31,6 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
     const moveHistory = useRef<Move[]>([]);
     const historyIndex = useRef(0);
     const allMoves = useRef<Move[]>([]);
-    const whiteTimer = useRef<TimerRef | null>(null);
-    const blackTimer = useRef<TimerRef | null>(null);
 
      /*
         -4, -2, -3, -5, -6, -3, -2, -4,
@@ -71,8 +62,6 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         colourToMove.current = 1;
         moveHistory.current = [];
         historyIndex.current = 0;
-        whiteTimer.current?.resetTimer();
-        blackTimer.current?.resetTimer();
         moveGeneratorService.resetGame(gameId);
     }
 
@@ -157,13 +146,6 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                                 makeComputerMove();
                             }
                         });
-                }
-                if(colour === 1) {
-                    whiteTimer.current?.stopTimer();
-                    blackTimer.current?.startTimer();
-                } else if (colour === -1) {
-                    blackTimer.current?.stopTimer();
-                    whiteTimer.current?.startTimer();
                 }
                 
             }
@@ -286,10 +268,6 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         return board;
     }
 
-    const startTimer = () => {
-        whiteTimer.current?.startTimer();
-    }
-
     const isSameColour = (piece: number, colour: number) => {
         return (piece > 0 && colour > 0) || (piece < 0 && colour < 0)
     }
@@ -304,16 +282,12 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         reset,
         onPrevMoveClicked,
         onNextMoveClicked,
-        fetchOpponentMove,
-        startTimer
+        fetchOpponentMove
     }));
 
     return (
         <>
             <div className={`board-container ${playerColour === -1 ? "board-rotated" : ""}`}>
-                <div className="timer-container">
-                    {gameMode === "online" && playerColour !== 0 && <Timer ref={blackTimer} rotate={playerColour === -1} onTimeUp={() => onGameEnd(1, 7)}/>}
-                </div>
                 <div className={`board ${!gameMode.startsWith("menu") || historyIndex.current < moveHistory.current.length ? "board-active" : "" }`}>
                     {
                     currentBoard.map((element, index) => {
@@ -370,9 +344,6 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
                             </div>
                         );
                     })}
-                </div>
-                <div className="timer-container">
-                    {gameMode === "online" && playerColour !== 0 && <Timer ref={whiteTimer} rotate={playerColour === -1} onTimeUp={() => onGameEnd(-1, 7)}/>}
                 </div>
             </div>
         </>

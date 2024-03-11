@@ -6,10 +6,16 @@
 }
 
 .pre-game-sidebar {
-    justify-content: space-between;
+    justify-content: center;
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding-bottom: 40px;
+}
+
+.game-sidebar {
+    display: flex;
+    flex-direction: column;
 }
 
 .button {
@@ -39,7 +45,6 @@
 .computer-button {
     background-color: #eeeed2;
     color: #769656;
-    margin-bottom: 100px
 }
 
 .computer-button:hover {
@@ -91,20 +96,6 @@
     color: #eeeed2;
 }
 
-.learn-more-button:hover {
-    background-color: #9dcb5d;
-}
-
-.learn-more-title {
-    font-size: 25px;
-    font-weight: 600;
-}
-
-.learn-more-subtitle {
-    font-size: 15px;
-    font-weight: 500;
-}
-
 .prev-next-btn-container {
     display: flex;
     margin-top: 20px;
@@ -120,24 +111,30 @@
     display: flex;
     width: 40px;
     height: 40px;
-    background-color: #eeeed2;
+    background-color: #AFABA6;
     align-items: center;
     justify-content: center;
-    border: 3px solid #769656;
+    border: 3px solid black;
     border-radius: 10px;
     cursor: pointer;
 }
 
 .move-button:hover {
-    background-color: #9dcb5d;
+    background-color: #7F7C79;
 }
 
 .move-button-icon {
     font-size: 30px;
-    color: #769656;
+    color: black;
     font-weight: 800;
 }
 
 .with-margin {
     margin-left: 5px;
+}
+
+.timer-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 520px;
 }

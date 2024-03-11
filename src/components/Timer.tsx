@@ -4,7 +4,7 @@ import React from "react";
 
 interface Props {
     onTimeUp: () => void,
-    rotate: boolean
+    white: boolean
 }
 
 const Timer = React.forwardRef((props: Props, ref) => {
@@ -48,7 +48,7 @@ const Timer = React.forwardRef((props: Props, ref) => {
     }));
 
     return(
-        <div className={`timer-container ${props.rotate ? 'timer-rotated' : ''}`}>
+        <div className={`timer ${props.white ? 'white-timer' : 'black-timer'}`}>
             <span className="timer-text">{formatTime(Math.floor(time/1000))}</span>
         </div>
     );

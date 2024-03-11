@@ -36,9 +36,9 @@ export default class MoveGeneratorService {
         }
     }
 
-    async createNewGame(colour: number, playerId: number): Promise<number> {
+    async createNewGame(colour: number, playerId: number, online: boolean): Promise<number> {
         try {
-            const response: AxiosResponse<number> = await axios.get<number>(`${this.baseUrl}/newGame?colour=${colour}&playerId=${playerId}`);
+            const response: AxiosResponse<number> = await axios.get<number>(`${this.baseUrl}/newGame?colour=${colour}&playerId=${playerId}&online=${online}`);
             return response.data;
         } catch(error) {
             throw new Error('Error while creating new game:' + error);

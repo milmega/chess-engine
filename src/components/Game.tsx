@@ -13,11 +13,16 @@ interface BoardRef {
     onPrevMoveClicked: (fastBackward: boolean) => boolean;
     onNextMoveClicked: (fastForward: boolean) => boolean;
     fetchOpponentMove: (colour: number, gameId: number) => boolean;
-    startTimer: () => void;
+}
+
+interface SidebarRef {
+    startTimer: (colour: number) => void;
+    resetTimer: () => void;
 }
 
 const Game = () => {
     const boardRef = useRef<BoardRef | null>(null);
+    const sidebarRef = useRef<SidebarRef | null>(null);
     const [gameResult, setGameResult] = useState("");
     const [gameResultDetails, setGameResultDetails] = useState("");
     const [gameMode, setGameMode] = useState("menu");
@@ -73,6 +78,7 @@ const Game = () => {
         setGameMode("menu");
         setPlayerColour(0);
         boardRef.current!.reset();
+        sidebarRef.current!.resetTimer();
         setPlayerToMove(1);
         setGameId(-1);
         searching.current = false;
@@ -87,26 +93,29 @@ const Game = () => {
             searching.current = true;
             startSearch(colour);        
         } else if (gameMode === "computer") {
-              setGameId(0);
-              boardRef.current!.startTimer(); //TODO: send this time to backend and correct it when get back
+            moveGeneratorService
+                .createNewGame(colour, playerId, false)
+                .then(id => {
+                    setGameId(id);
+                })
         }
     }
 
     const startSearch = (colour: number) => {
         setTimeout(() => {
             moveGeneratorService
-            .createNewGame(colour, playerId)
-            .then(id => {
-                if (id > 0) {
-                    setGameId(id);
-                    searching.current = false;
-                    setGameMode("online");
-                    boardRef.current!.startTimer();
-                } else if (searching.current) {
-                    startSearch(colour);
-                } else {
-                    moveGeneratorService.cancelSearch(playerId);
-                }
+                .createNewGame(colour, playerId, true)
+                .then(id => {
+                    if (id > 0) {
+                        setGameId(id);
+                        searching.current = false;
+                        setGameMode("online");
+                        sidebarRef.current!.startTimer(1);
+                    } else if (searching.current) {
+                        startSearch(colour);
+                    } else {
+                        moveGeneratorService.cancelSearch(playerId);
+                    }
             });
         }, 1000);
     }
@@ -124,11 +133,17 @@ const Game = () => {
     const onNextMoveClicked = (fastForward: boolean) => {
         setCheckingHistory(boardRef.current!.onNextMoveClicked(fastForward));
     }
+
+    const onPlayerToMoveChange = () => {
+        setPlayerToMove(-playerToMove);
+        sidebarRef.current!.startTimer(-playerToMove);
+    }
     
     useEffect(() => {
         const resetBeforeRefresh = (event: BeforeUnloadEvent) => {
             event.preventDefault();
             boardRef.current!.reset();
+            sidebarRef.current!.resetTimer();
             event.returnValue = '';
         };
         window.addEventListener('beforeunload', resetBeforeRefresh);
@@ -164,7 +179,13 @@ const Game = () => {
     return (
         <div className="game-container">
             <div>
-                <Board onGameEnd={declareWinner} ref={boardRef} gameMode={gameMode} gameId={gameId} playerColour={playerColour} onPlayerToMoveChange={() => setPlayerToMove(-playerToMove)}/>
+                <Board 
+                    ref={boardRef} 
+                    gameMode={gameMode} 
+                    gameId={gameId} 
+                    playerColour={playerColour}
+                    onGameEnd={declareWinner} 
+                    onPlayerToMoveChange={onPlayerToMoveChange}/>
                 {gameResult && !checkingHistory && <div className="banner vertical-banner">
                     <span className="banner-text">{gameResult}</span>
                     <span className="banner-subtext">{gameResultDetails}</span>
@@ -187,7 +208,16 @@ const Game = () => {
                     </div>
                 </div>}
             </div>
-            <SideBar id={playerId} onGameReset={resetGame} onPlayOnline={() => setGameMode("searching")} onPlayComputer={() => setGameMode("computer")} onPrevMove={onPrevMoveClicked} onNextMove={onNextMoveClicked}/>
+            <SideBar
+                ref={sidebarRef}
+                playerColour={playerColour}
+                onGameReset={resetGame} 
+                onPlayOnline={() => setGameMode("searching")} 
+                onPlayComputer={() => setGameMode("computer")} 
+                onPrevMove={onPrevMoveClicked} 
+                onNextMove={onNextMoveClicked}
+                onGameEnd={declareWinner}
+            />
         </div>
       );
 
