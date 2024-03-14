@@ -8,6 +8,7 @@ import MoveGeneratorService from './../services/MoveGeneratorService';
 import Square from './Square';
 import { SyncLoader } from 'react-spinners';
 import { Move } from './Move';
+import Level from './Level';
 
 interface BoardRef {
     reset: () => void;
@@ -27,6 +28,7 @@ const Game = () => {
     const [gameResult, setGameResult] = useState("");
     const [gameResultDetails, setGameResultDetails] = useState("");
     const [gameMode, setGameMode] = useState("menu");
+    const [gameLevel, setGameLevel] = useState(0);
     const [playerId, setPlayerId] = useState(1);
     const [playerColour, setPlayerColour] = useState(0);
     const [playerToMove, setPlayerToMove] = useState(1);
@@ -77,6 +79,7 @@ const Game = () => {
     const resetGame = () => {
         setGameResult("");
         setGameMode("menu");
+        setGameLevel(0);
         setPlayerColour(0);
         boardRef.current!.reset();
         sidebarRef.current!.resetTimer();
@@ -95,7 +98,7 @@ const Game = () => {
             startSearch(colour);        
         } else if (gameMode === "computer") {
             moveGeneratorService
-                .createNewGame(colour, playerId, false)
+                .createNewGame(colour, playerId, 0, false)
                 .then(id => {
                     setGameId(id);
                 })
@@ -105,7 +108,7 @@ const Game = () => {
     const startSearch = (colour: number) => {
         setTimeout(() => {
             moveGeneratorService
-                .createNewGame(colour, playerId, true)
+                .createNewGame(colour, playerId, gameLevel, true)
                 .then(id => {
                     if (id > 0) {
                         setGameId(id);
@@ -189,11 +192,19 @@ const Game = () => {
                     playerColour={playerColour}
                     onGameEnd={declareWinner} 
                     onPlayerToMoveChange={() => setPlayerToMove(-playerToMove)}/>
-                {gameResult && !checkingHistory && <div className="banner vertical-banner">
+                {gameResult && !checkingHistory && 
+                <div className="banner vertical-banner">
                     <span className="banner-text">{gameResult}</span>
                     <span className="banner-subtext">{gameResultDetails}</span>
                 </div>}
-                {gameMode !== "menu" && playerColour === 0 && !searching.current &&
+                {gameMode !== "menu" && playerColour === 0 && !searching.current &&  gameLevel === 0 &&
+                <div className="banner">
+                    <Level level="easy" onLevelClicked={() => setGameLevel(1)}/>
+                    <Level level="medium" onLevelClicked={() => setGameLevel(2)}/>
+                    <Level level="hard" onLevelClicked={() => setGameLevel(3)}/>
+                </div>
+                }
+                {gameMode !== "menu" && playerColour === 0 && !searching.current && gameLevel > 0 &&
                 <div className="banner">
                         <div className="banner-king" onClick={() => startGame(1)}><Square piece={Piece.KING} scale="5"/></div>
                         <div className="banner-double-king" onClick={() => startGame(0)}>
