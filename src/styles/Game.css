@@ -1,16 +1,23 @@
 .game-container {
     display: flex;
-    align-items: center;
     justify-content: center;
+    transform: scale(var(--scale-factor, 1));
+    transform-origin: top;
+}
+
+.board-with-banner-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .banner {
     width: 801px;
     height: 250px;
-    margin: 42px;
     background: rgb(0, 0, 0, 0.7);
     position: absolute;
-    top: 277px;
+    top: 278px;
+    left: 43px;
     z-index: 1;
     display: flex;
     align-items: center;

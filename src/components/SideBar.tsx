@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { SlControlPlay, SlControlStart, SlControlEnd } from "react-icons/sl";
 import "../styles/SideBar.css"
 import Timer from "./Timer";
@@ -11,7 +11,7 @@ interface Props {
     onPrevMove: (fastBackward: boolean) => void,
     onNextMove: (fastForward: boolean) => void,
     onGameEnd: (colour: number, reason: number) => void,
-    playerColour: number
+    gameMode: string
 }
 
 interface TimerRef {
@@ -19,38 +19,13 @@ interface TimerRef {
     updateTimer: (time: number) => void;
 }
 
-const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove, playerColour}: Props, ref) => {
-
-    const [gameMode, setGameMode] = useState("menu"); //menu, online, computer
+const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayComputer, onPrevMove, onNextMove, gameMode}: Props, ref) => {
     const whiteTimer = useRef<TimerRef | null>(null);
     const blackTimer = useRef<TimerRef | null>(null);
 
-    const onPlayComputerClicked = () => {
-        setGameMode("computer");
-        onPlayComputer();
-    }
-
-    const onPlayOnlineClicked = () => {
-        setGameMode("online");
-        onPlayOnline();
-    }
-
-    const onLeaveGameClicked = () => {
-        setGameMode("menu");
-        onGameReset();
-    }
-
-    const onPrevMoveBtnClicked = (fastBackward: boolean) => {
-        onPrevMove(fastBackward);
-    }
-
-    const onNextMoveBtnClicked = (fastForward: boolean) => {
-        onNextMove(fastForward);
-    }
-
     const updateTimer = (whiteTime: number, blackTime: number) => {
-        whiteTimer.current!.updateTimer(whiteTime);
-        blackTimer.current!.updateTimer(blackTime);
+        whiteTimer.current?.updateTimer(whiteTime);
+        blackTimer.current?.updateTimer(blackTime);
     }
 
     const resetTimer = () => {
@@ -67,11 +42,11 @@ const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayC
         <div className="sidebar">
             { gameMode.startsWith("menu") && <div className="pre-game-sidebar">
                 <div>
-                    <div className="button human-button" onClick={onPlayOnlineClicked}>
+                    <div className="button human-button" onClick={onPlayOnline}>
                         <span className="title">Play Online</span>
                         <span className="subtitle">Play against another user</span>
                     </div>
-                    <div className="button computer-button" onClick={onPlayComputerClicked}>
+                    <div className="button computer-button" onClick={onPlayComputer}>
                         <span className="title">Play Computer</span>
                         <span className="subtitle">Play against a bot</span>
                     </div>
@@ -79,20 +54,20 @@ const SideBar = React.forwardRef(({onGameEnd, onGameReset, onPlayOnline, onPlayC
                 <div></div>
             </div> }
             { !gameMode.startsWith("menu") && <div className="game-sidebar">
-                <div className="leave-game-button" onClick={onLeaveGameClicked}>
+                <div className="leave-game-button" onClick={onGameReset}>
                     <span>Leave the game</span>
                 </div>
                 <div className="prev-next-btn-container">
-                    <div className="move-button" onClick={() => onPrevMoveBtnClicked(true)}>
+                    <div className="move-button" onClick={() => onPrevMove(true)}>
                         <SlControlStart className="move-button-icon"/>
                     </div>
-                    <div className="move-button prev-move-button" onClick={() => onPrevMoveBtnClicked(false)}>
+                    <div className="move-button prev-move-button" onClick={() => onPrevMove(false)}>
                         <SlControlPlay className="move-button-icon with-margin"/>
                     </div>
-                    <div className="move-button" onClick={() => onNextMoveBtnClicked(false)}>
+                    <div className="move-button" onClick={() => onNextMove(false)}>
                         <SlControlPlay className="move-button-icon with-margin"/>
                     </div>
-                    <div className="move-button" onClick={() => onNextMoveBtnClicked(true)}>
+                    <div className="move-button" onClick={() => onNextMove(true)}>
                         <SlControlEnd className="move-button-icon"/>
                     </div>
                 </div>

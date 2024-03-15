@@ -73,7 +73,6 @@ const Game = () => {
                 setGameResultDetails("Stalemate");
             }
         }
-        setGameMode("menu");
     }
 
     const resetGame = () => {
@@ -101,6 +100,7 @@ const Game = () => {
                 .createNewGame(colour, playerId, 0, false)
                 .then(id => {
                     setGameId(id);
+
                 })
         }
     }
@@ -114,7 +114,7 @@ const Game = () => {
                         setGameId(id);
                         searching.current = false;
                         setGameMode("online");
-                        sidebarRef.current!.updateTimer(15*60-1, 15*60);
+                        sidebarRef.current?.updateTimer(15*60-1, 15*60);
                     } else if (searching.current) {
                         startSearch(colour);
                     } else {
@@ -131,7 +131,6 @@ const Game = () => {
 
     const onPrevMoveClicked = (fastBackward: boolean) => {
         setCheckingHistory(boardRef.current!.onPrevMoveClicked(fastBackward));
-        console.log(checkingHistory);
     }
 
     const onNextMoveClicked = (fastForward: boolean) => {
@@ -174,7 +173,7 @@ const Game = () => {
                     } else if (!gameState.isGameLive) {
                         declareWinner(playerColour, 6);
                     } else {
-                        sidebarRef.current!.updateTimer(gameState.whiteTime, gameState.blackTime);
+                        sidebarRef.current?.updateTimer(gameState.whiteTime, gameState.blackTime);
                     }
                 });
             }
@@ -182,9 +181,29 @@ const Game = () => {
         return () => clearInterval(intervalId);
     }, [gameId, gameMode, playerColour, playerToMove]);
 
+    useEffect(() => {
+        const updateScaleFactor = () => {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const widthThreshold = gameMode.endsWith("menu") ? 1330 : 1130;
+            const widthScaleFactor = viewportWidth > widthThreshold ? 1 : (viewportWidth / widthThreshold);
+            const heightScaleFactor = viewportHeight > 830 ? 1 : (viewportHeight / 830)
+            const scaleFactor = Math.min(widthScaleFactor, heightScaleFactor);
+            document.documentElement.style.setProperty('--scale-factor', scaleFactor.toString());
+        }
+
+        window.addEventListener('resize', updateScaleFactor);
+        updateScaleFactor();
+
+        return () => {
+            window.removeEventListener('resize', updateScaleFactor);
+        };
+
+    }, [gameMode]);
+
     return (
         <div className="game-container">
-            <div>
+            <div className="board-with-banner-container">
                 <Board 
                     ref={boardRef} 
                     gameMode={gameMode} 
@@ -197,14 +216,13 @@ const Game = () => {
                     <span className="banner-text">{gameResult}</span>
                     <span className="banner-subtext">{gameResultDetails}</span>
                 </div>}
-                {gameMode !== "menu" && playerColour === 0 && !searching.current &&  gameLevel === 0 &&
+                {gameMode === "computer" && playerColour === 0 && !searching.current &&  gameLevel === 0 &&
                 <div className="banner">
                     <Level level="easy" onLevelClicked={() => setGameLevel(1)}/>
                     <Level level="medium" onLevelClicked={() => setGameLevel(2)}/>
                     <Level level="hard" onLevelClicked={() => setGameLevel(3)}/>
-                </div>
-                }
-                {gameMode !== "menu" && playerColour === 0 && !searching.current && gameLevel > 0 &&
+                </div>}
+                {gameMode !== "menu" && playerColour === 0 && !searching.current && (gameLevel > 0 || gameMode === "searching") &&
                 <div className="banner">
                         <div className="banner-king" onClick={() => startGame(1)}><Square piece={Piece.KING} scale="5"/></div>
                         <div className="banner-double-king" onClick={() => startGame(0)}>
@@ -224,7 +242,7 @@ const Game = () => {
             </div>
             <SideBar
                 ref={sidebarRef}
-                playerColour={playerColour}
+                gameMode={gameMode}
                 onGameReset={resetGame} 
                 onPlayOnline={() => setGameMode("searching")} 
                 onPlayComputer={() => setGameMode("computer")} 
