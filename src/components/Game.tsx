@@ -12,6 +12,7 @@ import Level from './Level';
 
 interface BoardRef {
     reset: () => void;
+    makeComputerMove: (id: number) => void;
     onPrevMoveClicked: (fastBackward: boolean) => boolean;
     onNextMoveClicked: (fastForward: boolean) => boolean;
     updateFetchedMove: (move: Move) => void;
@@ -100,7 +101,9 @@ const Game = () => {
                 .createNewGame(colour, playerId, 0, false)
                 .then(id => {
                     setGameId(id);
-
+                    if(colour === -1) {
+                        boardRef.current?.makeComputerMove(id);
+                    }
                 })
         }
     }

@@ -156,11 +156,11 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
     }
     
     // calls backend service to get best move for a computer; start and destination are coors of the player's last move
-    const makeComputerMove = () => {
+    const makeComputerMove = (id: number = gameId) => {
         moveGeneratorService
-            .getBestMove(gameId, colourToMove.current)
+            .getBestMove(id, colourToMove.current)
             .then(move => {
-                if (move.piece !== 0) {
+                if (move.piece !== 0 && gameMode !== "menu") {
                     setChosenSquare(move.startSquare);
                     setPotentialMoves([move]);
                     makeMove(move.targetSquare, move);
@@ -273,6 +273,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
 
     React.useImperativeHandle(ref, () => ({
         reset,
+        makeComputerMove,
         onPrevMoveClicked,
         onNextMoveClicked,
         updateFetchedMove
