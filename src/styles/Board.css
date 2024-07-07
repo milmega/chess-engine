@@ -1,6 +1,24 @@
+.board-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0px 40px 0 40px;
+    transform: scale(0.95);
+}
+
 .board {
     display: grid;
     grid-template-columns: repeat(8, 0fr);
+    border: 3px solid black;
+    width: min-content;
+    opacity: 40%;
+}
+
+.board-active {
+    opacity: 100%;
+}
+
+.board-rotated {
+    rotate: 180deg;
 }
 
 .square {
@@ -18,3 +36,82 @@
 .light-square {
     background-color: #eeeed2;
 }
+
+.chosen-square {
+    background-color: #baca44;
+}
+
+.light-gray-dot {
+    width: 30px;
+    height: 30px;
+    background-color: #d1d5b7;
+    border-radius: 20px;
+}
+
+.dark-gray-dot {
+    width: 30px;
+    height: 30px;
+    background-color: #6b894b;
+    border-radius: 20px;
+}
+
+.last-move-light-dot {
+    background-color: #dbdd71;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+}
+
+.last-move-dark-dot {
+    background-color: #a8b83c;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+}
+
+.last-move-square-dark {
+    background-color: #baca44;
+}
+
+.last-move-square-light {
+    background-color: #f4f67d
+}
+
+.rotated-square {
+    transform: rotate(180deg);
+}
+
+.light-gray-circle {
+    background-color: #d1d5b7;
+}
+
+.dark-gray-circle {
+    background-color: #6b894b;
+}
+
+.last-move-light-circle {
+    background-color: #dbdd71;
+}
+
+.last-move-dark-circle {
+    background-color: #a8b83c;
+}
+
+.outer-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+.inner-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+

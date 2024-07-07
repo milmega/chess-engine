@@ -1,64 +1,68 @@
 import "../styles/Square.css"
 
-import PawnWhite from "./figures/PawnWhite";
-import PawnBlack from "./figures/PawnBlack";
-import KnightBlack from "./figures/KnightBlack";
-import KnightWhite from "./figures/KnightWhite";
-import BishopWhite from "./figures/BishopWhite";
-import BishopBlack from "./figures/BishopBlack";
-import KingWhite from "./figures/KingWhite";
-import KingBlack from "./figures/KingBlack";
-import QueenBlack from "./figures/QueenBlack";
-import QueenWhite from "./figures/QueenWhite";
-import RookWhite from "./figures/RookWhite";
-import RookBlack from "./figures/RookBlack";
+import PawnWhite from "./pieces/PawnWhite";
+import PawnBlack from "./pieces/PawnBlack";
+import KnightBlack from "./pieces/KnightBlack";
+import KnightWhite from "./pieces/KnightWhite";
+import BishopWhite from "./pieces/BishopWhite";
+import BishopBlack from "./pieces/BishopBlack";
+import KingWhite from "./pieces/KingWhite";
+import KingBlack from "./pieces/KingBlack";
+import QueenBlack from "./pieces/QueenBlack";
+import QueenWhite from "./pieces/QueenWhite";
+import RookWhite from "./pieces/RookWhite";
+import RookBlack from "./pieces/RookBlack";
+import { Piece } from "./Piece";
 
 type SquareProps = {
-    className: string;
-    figure: string;
-    xIndex: number;
-    yIndex: number;
+    piece: number;
+    scale: string;
 }
 
-const Square = (props: SquareProps) => {
-    if (props.figure === "pawn_white") {
-        return (<div className={props.className}><PawnWhite/></div>)
+const Square = ({piece, scale}: SquareProps) => {
+    if (piece === Piece.PAWN) {
+        return <PawnWhite scale={scale}/>
     }
-    if (props.figure === "pawn_black") {
-        return (<div className={props.className}><PawnBlack/></div>)
+    if (piece === -Piece.PAWN) {
+        return <PawnBlack scale={scale}/>
     }
-    if(props.figure === "rook_white") {
-        return(<div className={props.className}><RookWhite/></div>)
+    if (piece === Piece.ROOK) {
+        return <RookWhite scale={scale}/>
     }
-    if(props.figure === "rook_black") {
-        return(<div className={props.className}><RookBlack/></div>)
+    if (piece === -Piece.ROOK) {
+        return<RookBlack scale={scale}/>
     }
-    if (props.figure === "knight_white") {
-        return (<div className={props.className}><KnightWhite/></div>)
+    if (piece === Piece.KNIGHT) {
+        return <KnightWhite scale={scale}/>
     }
-    if (props.figure === "knight_black") {
-        return (<div className={props.className}><KnightBlack/></div>)
+    if (piece === -Piece.KNIGHT) {
+        return <KnightBlack scale={scale}/>
     }
-    if (props.figure === "bishop_white") {
-        return (<div className={props.className}><BishopWhite/></div>)
+    if (piece === Piece.BISHOP) {
+        return <BishopWhite scale={scale}/>
     }
-    if (props.figure === "bishop_black") {
-        return (<div className={props.className}><BishopBlack/></div>)
+    if (piece === -Piece.BISHOP) {
+        return <BishopBlack scale={scale}/>
     }
-    if (props.figure === "queen_white") {
-        return (<div className={props.className}><QueenWhite/></div>)
+    if (piece === Piece.QUEEN) {
+        return <QueenWhite scale={scale}/>
     }
-    if (props.figure === "queen_black") {
-        return (<div className={props.className}><QueenBlack/></div>)
+    if (piece === -Piece.QUEEN) {
+        return <QueenBlack scale={scale}/>
     }
-    if (props.figure === "king_white") {
-        return (<div className={props.className}><KingWhite/></div>)
+    if (piece === Piece.KING) {
+        return <KingWhite scale={scale}/>
     } 
-    if (props.figure === "king_black") {
-        return (<div className={props.className}><KingBlack/></div>)
+    if (piece === -Piece.KING) {
+        return <KingBlack scale={scale}/>
     }
-    return (<div className={props.className}>{props.figure}</div>);
+    return (<div>{piece}</div>);
     
 }
 
 export default Square;
+
+Square.defaultProps = {
+    piece: Piece.PAWN,
+    scale: "2"
+}

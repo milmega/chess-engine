@@ -1,0 +1,138 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.pre-game-sidebar {
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.game-sidebar {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    padding: 20px;
+    width: 350px;
+    height: 100px;
+    border-radius: 10px;
+    border: 3px solid #9dcb5d;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.human-button {
+    background-color: #769656;
+    color: #eeeed2;
+}
+
+.human-button:hover {
+    background-color: #9dcb5d;
+}
+
+.computer-button {
+    background-color: #eeeed2;
+    color: #769656;
+}
+
+.computer-button:hover {
+    background-color: #9dcb5d;
+    color: #eeeed2;
+}
+
+.title {
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.user-id-container {
+    color: #eeeed2;
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.leave-game-button {
+    display: flex;
+    width: 200px;
+    height: 50px;
+    background-color: red;
+    cursor: pointer;
+    color: white;
+    border-radius: 10px;
+    border: 3px solid black;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.leave-game-button:hover {
+    background-color: rgb(247, 108, 108);
+}
+
+.learn-more-button {
+    height: 20px;
+    width: 200px;
+    align-self: center;
+    background-color: #769656;
+    color: #eeeed2;
+}
+
+.prev-next-btn-container {
+    display: flex;
+    margin-top: 20px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prev-move-button {
+    transform: rotate(180deg);
+}
+
+.move-button {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    background-color: #AFABA6;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid black;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.move-button:hover {
+    background-color: #7F7C79;
+}
+
+.move-button-icon {
+    font-size: 30px;
+    color: black;
+    font-weight: 800;
+}
+
+.with-margin {
+    margin-left: 5px;
+}
+
+.timer-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 525px;
+}

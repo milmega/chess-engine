@@ -1,6 +1,10 @@
-const KnightWhite = () => {
+type PieceProps = {
+    scale: string;
+}
+
+const KnightWhite = ({scale}: PieceProps) => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform="scale(2)">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45" transform={`scale(${scale})`}>
             <g opacity="1" fill="none" fillOpacity="1" fillRule="evenodd" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeMiterlimit="4" strokeDasharray="none" strokeOpacity="1" transform="translate(0,0.3)">
                 <path
                 d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18"

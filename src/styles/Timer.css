@@ -1,0 +1,26 @@
+.timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 50px;
+    margin-top: 3px;
+    border: black solid 3px;
+    border-radius: 10px;
+}
+
+.white-timer {
+    color: #61605e;
+    background-color: #979694;
+}
+
+.black-timer {
+    color: #82817f;
+    background-color: #2b2926;
+}
+
+.timer-text {
+    display: flex;
+    justify-content: center;
+    font-size: 40px;
+}

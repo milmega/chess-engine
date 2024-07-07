@@ -1,0 +1,49 @@
+.level {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: scale(2);
+}
+
+.level-image {
+    display: flex;
+    flex-direction: column;
+    transform: rotate(-90deg);
+}
+
+.level-column {
+    height: 20px;
+    border: 1px black solid;
+    background-color: white;
+}
+
+.easy-column {
+    width: 20px;
+}
+
+.medium-column {
+    width: 40px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.hard-column {
+    width: 60px;
+}
+
+.fullfil-column {
+    background-color: #9dcb5d;
+    border: solid 1px black;
+}
+
+.side-margin {
+    margin-right: 150px;
+    margin-left: 150px;
+}
+
+.level-title {
+    text-transform: uppercase;
+    color: white;
+}

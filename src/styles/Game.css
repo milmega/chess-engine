@@ -1,0 +1,110 @@
+.game-container {
+    display: flex;
+    justify-content: center;
+    transform: scale(var(--scale-factor, 1));
+    transform-origin: top;
+}
+
+.board-with-banner-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.banner {
+    width: 801px;
+    height: 250px;
+    background: rgb(0, 0, 0, 0.7);
+    position: absolute;
+    top: 278px;
+    left: 43px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.95);
+}
+
+.cancel-button {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 15px;
+    right: 15px;
+    color: #eeeed2;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    color: black;
+}
+
+.vertical-banner {
+    flex-direction: column;
+}
+
+.banner-text {
+    color: white;
+    opacity: 100%;
+    font-weight: 800;
+    font-size: 100px;
+    text-transform: uppercase;
+}
+
+.banner-subtext {
+    color: white;
+    opacity: 100%;
+    font-weight: 800;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+.banner-king {
+    margin-left: 100px;
+    margin-right: 100px;
+    cursor: pointer;
+}
+
+.banner-double-king {
+    position: relative;
+    width: 210px;
+    height: 210px;
+    cursor: pointer;
+}
+
+.white-half {
+    position: absolute;
+    display: flex;
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0% 100%);
+    width: 210px;
+    height: 210px;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.black-half {
+    position: absolute;
+    display: flex;
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+    width: 210px;
+    height: 210px;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+}
+
+.loading-note {
+    color: #eeeed2;
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 20px;
+    text-transform: uppercase;
+}
