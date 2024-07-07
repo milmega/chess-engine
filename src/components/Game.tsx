@@ -163,8 +163,8 @@ const Game = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (gameMode === "online" && gameId > 0 && playerColour !== 0) {
-                moveGeneratorService.fetchUpdate(gameId).then(gameState => {
-                    const lastMove = gameState.lastMove;
+                moveGeneratorService.fetchUpdate(gameId).then(gameStatus => {
+                    const lastMove = gameStatus.lastMove;
                     if(playerColour !== playerToMove && 
                         lastMove.colour !== playerColour && 
                         lastMove.piece !== 0 && 
@@ -173,10 +173,10 @@ const Game = () => {
                         }
                     if (lastMove.gameResult > 0) {
                         declareWinner(lastMove.colour, lastMove.gameResult);
-                    } else if (!gameState.isGameLive) {
+                    } else if (!gameStatus.isGameLive) {
                         declareWinner(playerColour, 6);
                     } else {
-                        sidebarRef.current?.updateTimer(gameState.whiteTime, gameState.blackTime);
+                        sidebarRef.current?.updateTimer(gameStatus.whiteTime, gameStatus.blackTime);
                     }
                 });
             }

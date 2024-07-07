@@ -1,6 +1,6 @@
 import { Move } from "./Move";
 
-export class GameState {
+export class GameStatus {
     public isGameLive: boolean;
     public lastMove: Move;
     public whiteTime: number;

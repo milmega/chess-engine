@@ -84,12 +84,12 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         }
         if (allMoves.current.length === 0 && compMove === null) {
             moveGeneratorService
-            .getAllMoves(gameId, colourToMove.current)
-            .then(data => {
-                allMoves.current.push(...data);
-                if (allMoves.current.length > 0) {
-                    makeMove(position, compMove);
-                }
+                .getAllMoves(gameId, colourToMove.current)
+                .then(data => {
+                    allMoves.current.push(...data);
+                    if (allMoves.current.length > 0) {
+                        makeMove(position, compMove);
+                    }
             });
             return;
         }
@@ -208,7 +208,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         if (historyIndex.current-1 >= 0) {
             historyIndex.current--;
             const prevMove = moveHistory.current[historyIndex.current];
-            const tempBoard = [...currentBoard]; //TODO: make sure it's copied like here in other places as well
+            const tempBoard = [...currentBoard];
             tempBoard[prevMove.startSquare] = tempBoard[prevMove.targetSquare];
             tempBoard[prevMove.targetSquare] = prevMove.targetPiece;
             if (prevMove.castlingFlag) {
@@ -238,7 +238,7 @@ const Board = React.forwardRef(({onGameEnd, onPlayerToMoveChange, gameMode, game
         }
         if (historyIndex.current < moveHistory.current.length) {
             const nextMove = moveHistory.current[historyIndex.current];
-            const tempBoard = [...currentBoard]; //TODO: make sure it's copied like here in other places as well
+            const tempBoard = [...currentBoard];
             setCurrentBoard(updateBoardAfterMove(nextMove, tempBoard));
             historyIndex.current++;
         }

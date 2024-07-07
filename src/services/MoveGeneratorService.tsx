@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import { Move } from '../components/Move';
-import { GameState } from '../components/GameState';
+import { GameStatus } from '../components/GameStatus';
 
 export default class MoveGeneratorService {
     private baseUrl: string;
 
     constructor() {
-      this.baseUrl = 'https://chess-engine-service-sjnc6hg37q-ew.a.run.app';
-      //this.baseUrl = 'http://localhost:8080';
+      //this.baseUrl = 'https://chess-engine-service-sjnc6hg37q-ew.a.run.app';
+      this.baseUrl = 'http://localhost:8080';
     }
 
     async getBestMove(id: number, colour: number): Promise<Move> {
@@ -62,9 +62,9 @@ export default class MoveGeneratorService {
             });
     }
 
-    async fetchUpdate(gameId: number): Promise<GameState> {
+    async fetchUpdate(gameId: number): Promise<GameStatus> {
         try {
-            const response: AxiosResponse<GameState> = await axios.get<GameState>(`${this.baseUrl}/fetchUpdate?id=${gameId}`);
+            const response: AxiosResponse<GameStatus> = await axios.get<GameStatus>(`${this.baseUrl}/fetchUpdate?id=${gameId}`);
             return response.data;
         } catch(error) {
             throw new Error('Error fetching game state:' + error);
